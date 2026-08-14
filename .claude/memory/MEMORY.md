@@ -1,0 +1,4 @@
+- [Memory location rule](memory-location.md) — all project memory lives in this repo (`.claude/memory/`), never in Claude Code's global store
+- [Multi-doc project structure preference](pref-project-docs-structure.md) — many small focused docs, not one mega-file; CLAUDE.md is the entry point
+- [Agent-teams feature plan](agent-teams-feature-plan.md) — deferred: doc + skill to activate Claude Code agent-teams for this project
+- [Module processing workflow](module-processing-workflow.md) — how to turn each class module into docs, incl. pptx extraction and the rule-vs-context flag

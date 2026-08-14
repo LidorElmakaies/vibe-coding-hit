@@ -1,0 +1,25 @@
+# Course lecture slides — copyrighted material, kept local only (this repo is public)
+lessons/
+
+# Secrets — never commit an OpenRouter key or any .env file (see docs/rules/security-and-permissions.md)
+.env
+.env.*
+!.env.example
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Dependencies / build output (placeholders for once a stack is chosen)
+node_modules/
+dist/
+build/
+.next/
+*.log
+
+# Scratch extraction folders from pulling text out of .pptx files
+_pptx*/
