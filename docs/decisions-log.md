@@ -50,3 +50,27 @@
   `.claude/memory/all-prompts-teacher-provided.md`. Started `docs/decisions/` — an ADR-style
   planning record (options considered + rationale per major decision) so the reasoning behind each
   choice is visible, not just the conclusion.
+- 2026-08-14 — New rule: the assistant never runs `git add`/`commit`/`push` on its own initiative —
+  only drafts commit messages. Recorded in `.claude/memory/no-autonomous-git-commits.md` and
+  `docs/rules/security-and-permissions.md`.
+- 2026-08-14 — Stack decided: **Next.js (TypeScript, web only)**, **raw `openai` SDK against
+  OpenRouter** (not LangChain), **Supabase (Postgres)**, **Vercel**. User's original React Native
+  preference was flagged as a mismatch with the confirmed browser-based Tribunal architecture and
+  resolved to Next.js instead; LangChain was weighed against the project's actual (very minimal)
+  agent-calling needs and dropped in favor of the raw SDK. Recorded as ADRs 0009–0012. Updated
+  `CLAUDE.md` §3/§6 and `docs/architecture.md` accordingly.
+- 2026-08-14 — Wrote the three sub-agent definitions: `.claude/agents/backend.md`, `frontend.md`,
+  `testing.md` — real Claude Code subagent files (persona + job + boundaries + git rule), verified
+  against the actual `sub-agents`/`agent-teams` docs (fetched, not guessed) rather than assuming a
+  format. Dropped the separately-planned `docs/agents/*.md` rules docs as duplicative now that
+  these exist. Updated `CLAUDE.md` §5 and `.claude/memory/agent-teams-feature-plan.md` accordingly.
+  Not yet built: a `devops` subagent, `.claude/agent-teams.md`, and the activation skill.
+- 2026-08-14 — **Deployment changed: Docker Compose (local) + Render (future production), not
+  Vercel.** User specified this directly. [ADR-0012](decisions/0012-vercel-deployment.md) marked
+  superseded (kept, not deleted — the point of this folder is to show real direction happening,
+  including a same-day course correction); [ADR-0013](decisions/0013-docker-compose-local-render-production.md)
+  records the new decision: one Dockerfile for both local and (future) production, a plain
+  Postgres container locally vs. hosted Supabase in production. Updated `CLAUDE.md` §3/§6 and
+  `docs/architecture.md` accordingly. Added `.claude/agents/devops.md` — owns the Dockerfile,
+  compose file, and env/secrets wiring; explicitly told not to pre-build Render config since
+  that's future work, not current scope.

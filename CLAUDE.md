@@ -97,8 +97,16 @@ before touching the relevant part of the build:
 
 - **LLM provider: OpenRouter** for all agent calls (defense, prosecution, judges) — not calling
   OpenAI/Anthropic APIs directly. Lets us pick/mix models per agent.
-- Everything else (language, frontend/backend framework, hosting) — **not yet decided**. Will be
-  recorded here once chosen.
+- **Framework: Next.js (TypeScript), web only.** One project holds both the frontend (React UI)
+  and the backend (Route Handlers) — see [ADR-0009](docs/decisions/0009-fullstack-nextjs-typescript.md).
+- **Agent calls: the official `openai` SDK pointed at OpenRouter's base URL** — not LangChain. See
+  [ADR-0010](docs/decisions/0010-raw-sdk-not-langchain.md).
+- **Database: Supabase (Postgres)** engine; local dev uses a plain Postgres container, not the
+  hosted instance. See [ADR-0011](docs/decisions/0011-supabase-postgres-database.md).
+- **Deployment: Docker Compose locally; Render for production, once that's actually built** — not
+  Vercel (ADR-0012 superseded). One Dockerfile for both. See
+  [ADR-0013](docs/decisions/0013-docker-compose-local-render-production.md).
+- Package manager: npm (ships with Node, no reason to add another tool for this project's size).
 
 ## 4. Class Structure
 
@@ -133,29 +141,26 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 - `docs/documentation-brief-backend-orchestrator.md` — documentation brief for the orchestrator (Module 8)
 - `docs/summary.md` — project summary *(not yet created)*
 - `docs/ideas.md` — brainstorm/backlog, incl. advocate agent strategy angles *(not yet created)*
-- `docs/agents/backend.md` — backend agent's rules & responsibilities *(not yet created)*
-- `docs/agents/frontend.md` — frontend agent's rules & responsibilities *(not yet created)*
-- `docs/agents/testing.md` — testing agent's rules & responsibilities *(not yet created)*
-- `docs/agents/devops.md` — devops agent's rules (deploy + test) *(not yet created)*
 - `docs/modules/` — one file per class module, mapped onto this project
 - `docs/decisions-log.md` — full chronological changelog (moved out of this file, Module 11)
+- `.claude/agents/backend.md`, `frontend.md`, `testing.md`, `devops.md` — the actual sub-agent
+  definitions (persona + job + guidance), doubling as each role's rules doc. A separate
+  `docs/agents/*.md` was planned but dropped as duplicative once these existed.
 - `.claude/agent-teams.md` — how to use Claude Code's agent-teams feature in this project, and a
   skill to activate it during coding work *(planned, not yet created — ref:
   https://code.claude.com/docs/en/agent-teams)*
-- `.claude/agents/` — Claude Code sub-agent definitions for this project (frontend/backend/testing/devops)
 - `.claude/skills/` — Claude Code skills for this project
 
 ## 6. Open Questions
 
-- [ ] OpenRouter API key — obtained yet? Storage convention (`.env`)?
+- [ ] OpenRouter API key — obtained yet? Storage convention (`.env.local` for Next.js)?
 - [ ] Which model(s) via OpenRouter, per agent or shared?
-- [ ] Backend language/runtime?
 - [ ] The actual case text used for a given run — user-submitted per Tribunal scope (§2), but is
       there still one canonical teacher-supplied case to seed/demo with? (placeholder until
       provided).
 - [ ] Teacher's 7 system prompts — all of them, not just the judges' (not received yet).
-- [ ] What exactly the testing agent should verify.
 - [ ] Exact hard-cap value for calls-per-deliberation (economic blast radius, Module 9).
+- [ ] Actual Render service configuration — deliberately future work, see ADR-0013.
 - [ ] Whether to vary the OpenRouter model per call (cheaper for advocates, more capable for
       judges, per Module 9's "match capability to difficulty") or keep one shared model for
       simplicity — a deliberate choice still to make, not yet decided either way.
@@ -171,6 +176,13 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
   list, per the confirmed Tribunal scope.
 - ~~Desired output format?~~ **Browser display + persisted DB record** (case, all 7 outputs, call
   log), retrievable later via the past-cases list.
+- ~~Backend language/runtime? Frontend framework? LangChain or not?~~ **Next.js (TypeScript), raw
+  `openai` SDK against OpenRouter, Supabase (Postgres)** — see §3 and ADRs 0009–0011.
+- ~~Deployment target?~~ **Docker Compose locally; Render for production (future)** — see §3 and
+  ADRs 0012 (superseded)/0013.
+- ~~What exactly the testing agent should verify?~~ Specified directly in
+  `.claude/agents/testing.md`: `docs/framing.md` §3 item-by-item, the audit trail, the interface
+  brief's required states, the secrets rule, and failure-visibility.
 
 ## 7. Decisions Log
 

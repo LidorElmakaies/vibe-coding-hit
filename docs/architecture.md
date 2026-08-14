@@ -1,21 +1,21 @@
 # Architecture — agnet-project
 
-> First-draft architecture, applying [Module 7](modules/module7-web-application-architecture.md)'s
-> four-part model (browser / backend / database / deployment) to this project. **Pencil draft**
-> per [Module 6](modules/module6-intent-and-problem-framing.md) — expect this to change once stack
-> decisions land. This project is confirmed to be the course's own "Tribunal": a reusable web app
-> over any submitted case, not a one-off script over a single fixed case — see
-> [`docs/framing.md`](framing.md) §2/§4. See [`CLAUDE.md`](../CLAUDE.md) for the rules this must
-> satisfy.
+> Architecture, applying [Module 7](modules/module7-web-application-architecture.md)'s four-part
+> model (browser / backend / database / deployment) to this project. Stack is now decided — see
+> [the ADR index](decisions/README.md) for the options considered and why (deployment specifically
+> is [ADR-0013](decisions/0013-docker-compose-local-render-production.md), superseding 0012). This
+> project is confirmed to be the course's own "Tribunal": a reusable web app over any submitted
+> case, not a one-off script over a single fixed case — see [`docs/framing.md`](framing.md) §2/§4.
+> See [`CLAUDE.md`](../CLAUDE.md) for the rules this must satisfy.
 
 ## 1. The Four Parts, Applied Here
 
-| Part | Role in agnet-project |
-|---|---|
-| **Browser** | A submission form (charge sheet: defendant, act, exact question) creates a new case; a results view shows the 4 advocate outputs + 3 verdicts once a run completes; a past-cases list lets a case be found and re-read later. Untrusted by design — see §4. |
-| **Backend** | Orchestrates all 7 agent calls: builds each advocate's bundle (case + its system prompt), builds each judge's bundle (case + all 4 advocate outputs + judge system prompt), calls OpenRouter for each, writes results. Holds the OpenRouter key and all 7 system prompts — never sent to the browser. |
-| **Database** | Persists every submitted case, its 4 advocate outputs, its 3 verdicts, and a call-log row per model call (model, output, tokens, cost, time) — the audit trail required by [[CLAUDE.md]] §2. Also what makes the past-cases list possible. |
-| **Deployment** | Not yet decided — see Open Questions. |
+| Part | Role in agnet-project | Stack |
+|---|---|---|
+| **Browser** | A submission form (charge sheet: defendant, act, exact question) creates a new case; a results view shows the 4 advocate outputs + 3 verdicts once a run completes; a past-cases list lets a case be found and re-read later. Untrusted by design — see §4. | Next.js (React, App Router), TypeScript — [ADR-0009](decisions/0009-fullstack-nextjs-typescript.md) |
+| **Backend** | Orchestrates all 7 agent calls: builds each advocate's bundle (case + its system prompt), builds each judge's bundle (case + all 4 advocate outputs + judge system prompt), calls OpenRouter for each, writes results. Holds the OpenRouter key and all 7 system prompts — never sent to the browser. | Next.js Route Handlers (`app/api/`), TypeScript, `openai` SDK pointed at OpenRouter — [ADR-0009](decisions/0009-fullstack-nextjs-typescript.md), [ADR-0010](decisions/0010-raw-sdk-not-langchain.md) |
+| **Database** | Persists every submitted case, its 4 advocate outputs, its 3 verdicts, and a call-log row per model call (model, output, tokens, cost, time) — the audit trail required by [[CLAUDE.md]] §2. Also what makes the past-cases list possible. | Supabase (Postgres) — [ADR-0011](decisions/0011-supabase-postgres-database.md) |
+| **Deployment** | Serves the Next.js app (frontend + Route Handlers) as one container, locally and in production. | Docker Compose (local; app container + a plain Postgres container) → Render (production, future) — [ADR-0013](decisions/0013-docker-compose-local-render-production.md) |
 
 ## 2. Request Cycle — One Full Run
 
@@ -55,9 +55,12 @@ calls-per-deliberation bounds the cost of a runaway run — see Open Questions f
 
 ## 3. Database Shape (sketch, not yet a schema)
 
-Per [Module 7](modules/module7-web-application-architecture.md) §5, the choice between SQL and
-NoSQL is explicitly deferred ("know that both exist, the choice can wait") — sketching the shape
-in neutral terms:
+Engine decided — Postgres. Production uses Supabase's hosted instance
+([ADR-0011](decisions/0011-supabase-postgres-database.md)); local dev uses a plain Postgres
+container in the same `docker-compose.yml` as the app
+([ADR-0013](decisions/0013-docker-compose-local-render-production.md)) — same schema, same SQL,
+different connection string. Exact column types/constraints still need writing; sketching the
+shape in neutral terms for now:
 
 - **case** — the submitted charge sheet text (defendant, act, exact question) + metadata (when
   submitted).
@@ -79,10 +82,8 @@ in neutral terms:
 
 ## 5. Open Questions (carried from CLAUDE.md §6, architecture-relevant subset)
 
-- [ ] Backend language/runtime — not decided.
-- [ ] SQL vs. NoSQL — deliberately deferred, per Module 7 itself.
-- [ ] Deployment target — not decided (Netlify was listed as a course-recommended default; not
-      confirmed for this project).
+- [ ] The Postgres schema itself (columns, types, foreign keys) — the shape in §3 is still a
+      sketch, not DDL.
 - [ ] Which OpenRouter model(s) — per [Module 9](modules/module9-cognified-software-and-agent-economics.md),
       match capability to each call's difficulty rather than defaulting one model everywhere; exact
       choice not made yet.

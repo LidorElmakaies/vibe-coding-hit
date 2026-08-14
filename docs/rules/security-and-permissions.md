@@ -18,3 +18,10 @@
   because it's also the thing that makes the browser/backend split above meaningful: there's
   nothing of ours to leak on the prompt side at all — everything that must never reach the
   browser is the teacher's, in full.
+
+- **No agent (including Claude Code itself) runs `git add`/`commit`/`push` on its own
+  initiative — ever.** The user stages, commits, and pushes; an agent's job stops at drafting a
+  commit message and naming what changed. This applies to any future backend/frontend/testing/
+  devops sub-agent too, not just interactive sessions — git write access is not a default
+  permission, it's granted explicitly, per the "tool/permission grants are the real boundary"
+  rule above. *(User instruction, 2026-08-14 — see `.claude/memory/no-autonomous-git-commits.md`)*
