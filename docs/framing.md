@@ -34,8 +34,8 @@ solution.)*
 | Stakeholder | Stake |
 |---|---|
 | **The student (user)** | Builds it, is graded on the process (per [Module 1](modules/module1-what-is-agentic-software-engineering.md)'s grading rule: "I grade how well you direct the agent"), owns all decisions and accountability per [Module 2](modules/module2-the-human-role.md). |
-| **The teacher** | Supplies the fixed case text and the 3 judge system prompts; grades the repo (documentation + running project + engagement, per the course's grading breakdown); is the actual approver of "done." |
-| **The 4 advocate agents (as design artifacts)** | Not people, but each has a "stake" in being equipped correctly — a poorly-framed system prompt harms the *quality of the exercise itself*, not just code correctness (see [Module 4](modules/module4-anatomy-of-agentic-workflow.md)'s intent/specification distinction). |
+| **The teacher** | Supplies the case input **and all 7 system prompts** (4 advocates + 3 judges — updated 2026-08-14; originally assumed we'd write the 4 advocate prompts ourselves, corrected by the user); grades the repo (documentation + running project + engagement, per the course's grading breakdown); is the actual approver of "done." |
+| **The 4 advocate agents (as design artifacts)** | Not people, but each has a "stake" in being run correctly — since the prompts themselves are the teacher's authorship, our responsibility shifts to *not corrupting* them (never editing, always passing the full case) rather than designing them (see [Module 4](modules/module4-anatomy-of-agentic-workflow.md)'s intent/specification distinction, now applied to our orchestration code instead). |
 | **A future reader of the audit trail** | Anyone (grader, the student later, a reviewer) who opens the record of a past run — per [Module 4](modules/module4-anatomy-of-agentic-workflow.md), needs to understand what happened and why without having watched it happen. |
 | **Whoever runs the app end-to-end** | **Confirmed:** this project is the course's own "Tribunal" — a reusable web app, not a one-off script. Someone submits a charge sheet (defendant, act, exact question) and reads back an opinion; past cases can be browsed. Nearly missed the way [Module 6](modules/module6-intent-and-problem-framing.md)'s planner example missed the employer/teachers — worth naming explicitly now that it's caught. |
 
@@ -44,9 +44,10 @@ solution.)*
 *(Checkable — test: could two people looking at the result still disagree whether it was met?)*
 
 A run is "done" when, for the teacher-supplied case:
-1. All 4 advocate agents have produced a single-shot output arguing their assigned stance
-   (defense/prosecution), each from a distinct, identifiable strategy (not near-duplicates of each
-   other on the same side).
+1. All 4 advocate agents have produced a single-shot output using their teacher-provided system
+   prompt, arguing their assigned stance (defense/prosecution). Whether the 2 defense / 2
+   prosecution prompts embody genuinely distinct strategies is the teacher's authorship, not ours
+   to fix — but a run should still surface it clearly if two outputs read as near-duplicates.
 2. All 3 judge agents (teacher's prompts, unmodified) have each independently received the full
    bundle (case + all 4 advocate outputs) and produced a verdict.
 3. Every one of those 7 calls has a persisted audit-trail record: which model, the prompt/context
@@ -70,8 +71,8 @@ A run is "done" when, for the teacher-supplied case:
 - **Multi-turn debate between advocates, or between advocates and judges.** All 7 calls are
   single-shot by design (see [[CLAUDE.md]] §2) — this project deliberately does not build a
   back-and-forth courtroom simulation.
-- **Editing or generating the judges' system prompts.** Those come from the teacher verbatim,
-  never authored or tuned by us.
+- **Editing or generating any of the 7 system prompts** (4 advocates + 3 judges). All come from
+  the teacher verbatim, never authored or tuned by us.
 - **A general-purpose legal-advice tool.** This is a class exercise, not a product aimed at real
   legal use — the app being reusable across cases (see below) doesn't make it one.
 - **Fine-tuning or training a model.** All agents are prompt-driven calls through OpenRouter to
@@ -87,6 +88,6 @@ example — this project *is* that app, not a one-off script over a single fixed
 
 ## 5. Still Open
 
-See [CLAUDE.md](../CLAUDE.md) §6 for the full list. Still open: exact advocate strategies, and the
-fixed case text / judge prompts themselves (blocked on the teacher). The Tribunal-scope question
-is resolved — see §2 and §4 above.
+See [CLAUDE.md](../CLAUDE.md) §6 for the full list. Still open: the case input and all 7 system
+prompts themselves (blocked on the teacher). The Tribunal-scope question is resolved — see §2 and
+§4 above.

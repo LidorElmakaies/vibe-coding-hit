@@ -39,3 +39,14 @@
   auto-loaded root file. Flagged an open question rather than quietly proceeding: most of this
   repo's docs have been assistant-drafted and bulk-approved, not hand-edited by the user — Module
   11's own finding says that measurably underperforms a genuinely human-written file.
+- 2026-08-14 — Pushed the repo to GitHub (`github.com/LidorElmakaies/vibe-coding-hit`, public).
+  Excluded `lessons/` via `.gitignore` (copyrighted lecture slides, repo is public); included
+  `.claude/` (memory + `.gitkeep`-tracked scaffold folders) per the user's request.
+- 2026-08-14 — **Correction: all 7 system prompts (4 advocates + 3 judges) are teacher-provided**,
+  not just the judges' — earlier assumption that we'd author the 4 advocate prompts was wrong.
+  Updated `CLAUDE.md` §2 (agent roles table, pipeline diagram, assignment constraints, input/output
+  framing), `docs/framing.md`, `docs/architecture.md`, `docs/rules/agent-design.md`,
+  `docs/rules/security-and-permissions.md`, and the Module 1/10 write-ups accordingly. Added
+  `.claude/memory/all-prompts-teacher-provided.md`. Started `docs/decisions/` — an ADR-style
+  planning record (options considered + rationale per major decision) so the reasoning behind each
+  choice is visible, not just the conclusion.

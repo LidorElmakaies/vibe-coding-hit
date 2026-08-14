@@ -2,10 +2,10 @@
 
 > Part of the split-out rule set — see [`CLAUDE.md`](../../CLAUDE.md) §2 for the pointer and
 > [`docs/framing.md`](../framing.md)/[`docs/architecture.md`](../architecture.md) for how these
-> apply concretely. Project-defining constraints (single-shot advocates, distinct strategies,
-> judges get the full bundle, judge prompts unedited) stay in `CLAUDE.md` §2 itself since they're
-> the assignment's own shape, not module-derived discipline — this file holds the *how we direct
-> and delegate* rules the course has added on top.
+> apply concretely. Project-defining constraints (single-shot advocates, judges get the full
+> bundle, all 7 system prompts teacher-provided and unedited) stay in `CLAUDE.md` §2 itself since
+> they're the assignment's own shape, not module-derived discipline — this file holds the *how we
+> direct and delegate* rules the course has added on top.
 
 - **Definition-of-done must be written by us, before delegating — starting from intent, not a
   solution-shaped request.** Every task handed to a sub-agent (frontend/backend/testing/devops, or
@@ -22,10 +22,11 @@
   (judges are separate from advocates); extends explicitly to our own build: the testing agent
   must be independent from whichever agent produced what it's checking. *(Module 5)*
 
-- **Treat every system prompt as code: versioned and reviewed, never edited carelessly.**
-  "Behaviour lives in the prompts, not the code" — a careless prompt edit is a real fault, not a
-  copy tweak. Applies to our 4 advocate prompts (the teacher's 3 judge prompts are already fixed
-  and unedited by rule). *(Module 9)*
+- **Treat every system prompt as code: versioned, never edited.** "Behaviour lives in the prompts,
+  not the code" — a careless prompt edit is a real fault, not a copy tweak. All 7 prompts (4
+  advocates + 3 judges) are teacher-provided and already fixed by rule (see `CLAUDE.md` §2) — this
+  rule now means: store them under version control exactly as received, diff any change the
+  teacher sends as an update, and never silently "fix" one ourselves. *(Module 9)*
 
 - **Match each model's capability to that call's actual difficulty — on purpose, not by default.**
   "A hard ruling may warrant a capable model. A one-sided argument may need far less." Don't
@@ -34,9 +35,10 @@
 
 ## Specification Structure (Module 10)
 
-Every spec we hand to a sub-agent — the 4 advocate system prompts, the backend-orchestrator brief,
-any frontend/testing/devops task — should be written in prose but hit **Knuth's criteria**: finite
-(ends after finite steps), definite (every step unambiguous), input/output named precisely,
+Every spec we hand to a sub-agent — the backend-orchestrator brief, any frontend/testing/devops
+task (the 4 advocate/3 judge prompts themselves are teacher-provided, not ours to spec) — should
+be written in prose but hit **Knuth's criteria**: finite (ends after finite steps), definite
+(every step unambiguous), input/output named precisely,
 effective (a person could follow it with paper). Concretely, cover all **five parts**, in this
 order:
 

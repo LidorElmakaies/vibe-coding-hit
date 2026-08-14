@@ -61,9 +61,9 @@ in neutral terms:
 
 - **case** — the submitted charge sheet text (defendant, act, exact question) + metadata (when
   submitted).
-- **advocate_output** (×4 per run) — stance (defense/prosecution), strategy label, system prompt
-  used, model used, output text.
-- **verdict** (×3 per run) — judge id, system prompt used (teacher's, verbatim), model used,
+- **advocate_output** (×4 per run) — stance (defense/prosecution), teacher-provided system prompt
+  used (verbatim), model used, output text.
+- **verdict** (×3 per run) — judge id, teacher-provided system prompt used (verbatim), model used,
   output text.
 - **call_log** (×7 per run) — one row per OpenRouter call: which of the above it belongs to,
   model, token counts, cost, timestamp. This *is* the audit trail — see
@@ -73,9 +73,9 @@ in neutral terms:
 
 - The OpenRouter API key lives only in backend config/environment — never shipped to the browser,
   never in client-side JS, never committed to the repo in plaintext.
-- All 7 system prompts (ours for the 4 advocates, the teacher's for the 3 judges) live only on the
-  backend. The browser only ever receives finished text to display.
-- The teacher's judge prompts are stored verbatim, unedited — see [[CLAUDE.md]] §2.
+- All 7 system prompts (4 advocates + 3 judges, all teacher-provided) live only on the backend.
+  The browser only ever receives finished text to display.
+- All 7 teacher-provided prompts are stored and used verbatim, unedited — see [[CLAUDE.md]] §2.
 
 ## 5. Open Questions (carried from CLAUDE.md §6, architecture-relevant subset)
 

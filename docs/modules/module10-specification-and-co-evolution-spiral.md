@@ -58,11 +58,12 @@ Two judgment skills the deck says are **taught nowhere else in the course**:
 ## 5. How This Applies to agnet-project — Rules Added
 
 Extended [`docs/rules/agent-design.md`](../rules/agent-design.md) with a **Specification
-Structure** section: every future spec we hand to a sub-agent (the 4 advocate prompts, the
-backend-orchestrator brief, any frontend/testing/devops task) should hit Knuth's criteria in prose
-and cover all five parts above — goal+reason, testable criteria, architectural boundaries,
-validation approach, pitfalls. This is now the concrete shape the existing "definition-of-done
-starts from intent" rule (Modules 2, 4) should take.
+Structure** section: every future spec we hand to a sub-agent (the backend-orchestrator brief, any
+frontend/testing/devops task — not the advocate/judge prompts, which are teacher-provided, see
+`CLAUDE.md` §2) should hit Knuth's criteria in prose and cover all five parts above — goal+reason,
+testable criteria, architectural boundaries, validation approach, pitfalls. This is now the
+concrete shape the existing "definition-of-done starts from intent" rule (Modules 2, 4) should
+take.
 
 Applied the **commit point / drift detection** discipline to our own living docs: `docs/framing.md`
 and `docs/architecture.md` are marked "pencil draft, revise freely" with no notion of what's
@@ -75,6 +76,6 @@ nothing has actually run — revisit once the first real deliberation executes.
 
 - [ ] Once the backend exists and a first case runs end-to-end, do a first commit-point pass on
       `docs/framing.md`/`docs/architecture.md` — lock what that run actually confirmed.
-- [ ] Write the 4 advocate system prompts as full 5-part specs (not just a stance + strategy
-      label) before handing them to a build agent — currently still just labeled TBD in
-      `CLAUDE.md` §2/§6.
+- [ ] Write the backend-orchestrator brief as a full 5-part spec before handing it to a build
+      agent (the advocate/judge prompts themselves don't need this — they're teacher-provided,
+      see `CLAUDE.md` §2).

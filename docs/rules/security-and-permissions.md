@@ -13,8 +13,8 @@
   prompts (4 advocates + 3 judges) live and execute only on the backend. The browser only ever
   sends a case and receives outputs back. *(Module 7)*
 
-- **The teacher's judge prompts are stored and used verbatim — never authored, edited, or tuned by
-  us.** A project-defining constraint (see `CLAUDE.md` §2), restated here because it's also the
-  thing that makes the browser/backend split above meaningful: there's nothing of ours to leak
-  from the judge side, only the teacher's prompts, which get the same "never in the browser"
-  treatment as our own.
+- **All 7 system prompts (4 advocates + 3 judges) are stored and used verbatim — never authored,
+  edited, or tuned by us.** A project-defining constraint (see `CLAUDE.md` §2), restated here
+  because it's also the thing that makes the browser/backend split above meaningful: there's
+  nothing of ours to leak on the prompt side at all — everything that must never reach the
+  browser is the teacher's, in full.

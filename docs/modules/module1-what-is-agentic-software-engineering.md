@@ -132,13 +132,14 @@ is agent-direction skill" — that's a direct restatement of the deck's grading 
 well you direct the agent — not the app you ship") and the equip/verify framing. Concretely, for
 our courtroom simulator:
 
-- **Equipping maps directly onto our advocate agents.** Each of the 4 advocate system prompts
-  (2 defense, 2 prosecution) is itself an "equipping" exercise: right problem (argue this specific
-  stance persuasively), right context (the case facts), right limits (single-shot, stay in
-  character, argue only its assigned side), right specification (what a good argument for that
-  agent looks like). Weak system prompts here are exactly the "casual" failure mode from the
-  worked example — treat writing them with the same rigor as the password-reset example, not as
-  "type a vibe and hope."
+- **Equipping maps onto the orchestration around the advocate agents.** *(Updated 2026-08-14: the
+  4 advocate + 3 judge system prompts turned out to be teacher-provided, not ours to write — see
+  `CLAUDE.md` §2.)* Our own equipping work moved from "write a good advocate prompt" to "equip the
+  backend/orchestrator correctly": right problem (get the case and the teacher's prompts into the
+  pipeline faithfully), right context (case + bundle assembly), right limits (single-shot, never
+  edit a teacher-provided prompt), right specification (what a correct run actually looks like —
+  see `docs/framing.md`). The "casual vs. engineered" contrast from the worked example still
+  applies, just to the pipeline we build, not to prompts we no longer author.
 - **Verifying maps onto the testing agent we're planning.** Per this module, "no gate, no merge"
   — our testing agent's job is the gate: check each advocate output actually argues its assigned
   stance/strategy (catches wrong-problem-solving), check judges actually received the full bundle

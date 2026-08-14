@@ -2,3 +2,4 @@
 - [Multi-doc project structure preference](pref-project-docs-structure.md) — many small focused docs, not one mega-file; CLAUDE.md is the entry point
 - [Agent-teams feature plan](agent-teams-feature-plan.md) — deferred: doc + skill to activate Claude Code agent-teams for this project
 - [Module processing workflow](module-processing-workflow.md) — how to turn each class module into docs, incl. pptx extraction and the rule-vs-context flag
+- [All 7 prompts are teacher-provided](all-prompts-teacher-provided.md) — correction: we never author/edit any advocate or judge system prompt, only orchestrate them

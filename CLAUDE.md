@@ -20,46 +20,52 @@ class adds rules/techniques we are expected to actually apply here (see §4).
 
 ## 2. Project Concept: AI Courtroom Simulator
 
-Teacher provides: a fixed case (a person killed someone, now on trial) and the 3 judge system
-prompts. We provide: 4 advocate agents (2 defense, 2 prosecution) and the orchestration.
+**Input:** the court problem — a submitted case describing what happened, in full. **Output:**
+the 3 judges' verdicts — that's the project's deliverable, not the advocate arguments (those are
+intermediate work product the judges need, not the end goal).
+
+Teacher provides **all 7 system prompts** (4 advocates + 3 judges) — we do not author or edit any
+of them. We provide the orchestration, backend, frontend, database, and verification that runs
+them correctly and shows the result legibly.
 
 ### Agent Roles
 
 | Agent | Count | Stance | Prompt authored by | Mode |
 |---|---|---|---|---|
-| Defense | 2 | Argue INNOCENT (justify the killing / argue lack of intent) | Us | Single-shot: one system prompt → one response. No conversation, no memory. |
-| Prosecution | 2 | Argue GUILTY (and of what specific charge) | Us | Single-shot, same constraints |
-| Judge | 3 | Reads all 4 arguments + the case, renders a verdict | **Teacher-provided prompts — we don't author or edit these** | Single-shot |
+| Defense | 2 | Argue INNOCENT (justify the killing / argue lack of intent) | **Teacher-provided — we don't author or edit these** | Single-shot: one system prompt → one response. No conversation, no memory. |
+| Prosecution | 2 | Argue GUILTY (and of what specific charge) | **Teacher-provided — we don't author or edit these** | Single-shot, same constraints |
+| Judge | 3 | Reads all 4 arguments + the case, renders a verdict | **Teacher-provided — we don't author or edit these** | Single-shot |
 
 ### Pipeline
 
 ```
-Fixed case text
+Court problem (the case: what happened, in full)
    │
-   ├──> Defense #1   (system prompt A, distinct strategy)
-   ├──> Defense #2   (system prompt B, distinct strategy)
-   ├──> Prosecution #1 (system prompt C, distinct theory of guilt)
-   └──> Prosecution #2 (system prompt D, distinct theory of guilt)
+   ├──> Defense #1   (teacher-provided system prompt A)
+   ├──> Defense #2   (teacher-provided system prompt B)
+   ├──> Prosecution #1 (teacher-provided system prompt C)
+   └──> Prosecution #2 (teacher-provided system prompt D)
          │  (all 4 run independently/in parallel — no shared context between them)
          ▼
    Bundle = case text + all 4 advocate outputs
          │
-         ├──> Judge #1 (teacher prompt)
-         ├──> Judge #2 (teacher prompt)
-         └──> Judge #3 (teacher prompt)
+         ├──> Judge #1 (teacher-provided system prompt)
+         ├──> Judge #2 (teacher-provided system prompt)
+         └──> Judge #3 (teacher-provided system prompt)
                (each judge runs independently, no cross-talk)
          ▼
-   3 verdicts = final output
+   3 verdicts = PROJECT OUTPUT
 ```
 
 ### Assignment Constraints (project-defining, not module-derived)
 
 - Advocate agents (defense/prosecution) are single-prompt only. No multi-turn, no tool use,
   no shared memory between them.
-- The 2 defense agents must argue **distinct strategies** from each other (not duplicates); same
-  for the 2 prosecution agents. Exact strategies: TBD, track in `docs/ideas.md` once created.
+- **We do not write or edit any of the 7 system prompts** (4 advocates + 3 judges) — all come
+  from the teacher, verbatim, before a run. Whether the 2 defense/2 prosecution prompts embody
+  distinct strategies is the teacher's authorship call, not ours — if two ever read as
+  near-duplicates, we flag it; we do not rewrite them ourselves.
 - Judges must receive the full bundle (case + all 4 outputs), never a partial view.
-- We do not write or edit judge system prompts — those come from the teacher verbatim.
 - Keep the stack minimal. Don't add infrastructure that doesn't serve the learning goal.
 - Keep [`docs/framing.md`](docs/framing.md) current — it's what a disputed decision gets checked
   against; update it when reality corrects it, don't let it go stale. *(Module 6)*
@@ -117,6 +123,9 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 ## 5. Documentation Map
 
 - `CLAUDE.md` — this file: project idea + global rules (start here)
+- `docs/decisions/` — **planning record**: each major decision, the options weighed, and why we
+  picked what we picked over the alternatives — this is the visible "directing the agent" trail
+  for grading, see the index at `docs/decisions/README.md`
 - `docs/framing.md` — problem statement, stakeholders, definition of done, out-of-scope (Module 6)
 - `docs/architecture.md` — system architecture, first draft (Module 7, updated Module 9)
 - `docs/rules/` — module-derived engineering rules, split by topic (see §2 above)
@@ -141,11 +150,10 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 - [ ] OpenRouter API key — obtained yet? Storage convention (`.env`)?
 - [ ] Which model(s) via OpenRouter, per agent or shared?
 - [ ] Backend language/runtime?
-- [ ] Distinct strategy angles for the 2 defense / 2 prosecution agents.
 - [ ] The actual case text used for a given run — user-submitted per Tribunal scope (§2), but is
       there still one canonical teacher-supplied case to seed/demo with? (placeholder until
       provided).
-- [ ] Teacher's 3 judge system prompts (not received yet).
+- [ ] Teacher's 7 system prompts — all of them, not just the judges' (not received yet).
 - [ ] What exactly the testing agent should verify.
 - [ ] Exact hard-cap value for calls-per-deliberation (economic blast radius, Module 9).
 - [ ] Whether to vary the OpenRouter model per call (cheaper for advocates, more capable for
