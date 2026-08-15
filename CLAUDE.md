@@ -66,6 +66,8 @@ Court problem (the case: what happened, in full)
   distinct strategies is the teacher's authorship call, not ours — if two ever read as
   near-duplicates, we flag it; we do not rewrite them ourselves.
 - Judges must receive the full bundle (case + all 4 outputs), never a partial view.
+- **Every run calculates and persists total tokens used, from real OpenRouter `usage` data** —
+  not estimated. Added 2026-08-14. See [`docs/cost-budget.md`](docs/cost-budget.md).
 - Keep the stack minimal. Don't add infrastructure that doesn't serve the learning goal.
 - Keep [`docs/framing.md`](docs/framing.md) current — it's what a disputed decision gets checked
   against; update it when reality corrects it, don't let it go stale. *(Module 6)*
@@ -139,6 +141,7 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 - `docs/rules/` — module-derived engineering rules, split by topic (see §2 above)
 - `docs/interface-brief-opinion-screen.md` — interface brief for the results screen (Module 8)
 - `docs/documentation-brief-backend-orchestrator.md` — documentation brief for the orchestrator (Module 8)
+- `docs/cost-budget.md` — per-agent token budget, retry/blast-radius cap, cost estimate method
 - `docs/summary.md` — project summary *(not yet created)*
 - `docs/ideas.md` — brainstorm/backlog, incl. advocate agent strategy angles *(not yet created)*
 - `docs/modules/` — one file per class module, mapped onto this project
@@ -159,15 +162,13 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
       there still one canonical teacher-supplied case to seed/demo with? (placeholder until
       provided).
 - [ ] Teacher's 7 system prompts — all of them, not just the judges' (not received yet).
-- [ ] Exact hard-cap value for calls-per-deliberation (economic blast radius, Module 9).
 - [ ] Actual Render service configuration — deliberately future work, see ADR-0013.
 - [ ] Whether to vary the OpenRouter model per call (cheaper for advocates, more capable for
       judges, per Module 9's "match capability to difficulty") or keep one shared model for
       simplicity — a deliberate choice still to make, not yet decided either way.
 - [ ] **Have you personally read/edited `CLAUDE.md` and `docs/rules/*.md` yet?** Per Module 11,
       unreviewed assistant-drafted context files measurably underperform hand-written ones — most
-      of this repo's docs have been drafted by me and approved in bulk rather than line-edited by
-      you. Not urgent, but the highest-leverage open item per that module's own claim.
+      of this repo's docs have been drafted by me and approved in bulk rather than you.
 
 **Resolved:**
 - ~~Is "the Tribunal" this project's actual target shape?~~ **Yes, confirmed** — see §1/§4 and
@@ -180,6 +181,8 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
   `openai` SDK against OpenRouter, Supabase (Postgres)** — see §3 and ADRs 0009–0011.
 - ~~Deployment target?~~ **Docker Compose locally; Render for production (future)** — see §3 and
   ADRs 0012 (superseded)/0013.
+- ~~Exact hard-cap value for calls-per-deliberation?~~ **21 calls/run** (7 base × up to 3 attempts
+  each) — see [`docs/cost-budget.md`](docs/cost-budget.md) §5.
 - ~~What exactly the testing agent should verify?~~ Specified directly in
   `.claude/agents/testing.md`: `docs/framing.md` §3 item-by-item, the audit trail, the interface
   brief's required states, the secrets rule, and failure-visibility.

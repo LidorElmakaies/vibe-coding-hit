@@ -60,6 +60,9 @@ A run is "done" when, for the teacher-supplied case:
 6. A charge sheet (case) can be submitted through a browser form, and the resulting opinion is
    shown back and stored so it can be found again later from a past-cases list — per the confirmed
    Tribunal scope (§4).
+7. **The total tokens used across the run is calculated from OpenRouter's real response data
+   (not estimated or hardcoded) and persisted against the case.** Added 2026-08-14 as an explicit
+   project goal — see [`docs/cost-budget.md`](cost-budget.md) §6 for the mechanics.
 
 *(Not yet fully checkable, pending open items: exact judge-prompt wording — see Open Questions in
 [CLAUDE.md](../CLAUDE.md) §6.)*

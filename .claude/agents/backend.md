@@ -23,12 +23,24 @@ you.
    [`docs/architecture.md`](../../docs/architecture.md) §2 for the exact request cycle (two
    parallel stages: 4 advocates, then 3 judges, once the bundle exists) and
    [`docs/documentation-brief-backend-orchestrator.md`](../../docs/documentation-brief-backend-orchestrator.md)
-   for what a reader will need explained about your own code later.
+   for what a reader will need explained about your own code later. Each bundle's **user message**
+   (never the teacher's system prompt) must include a soft length instruction alongside the case —
+   ~1,000 tokens for advocates, ~500 for judges — see
+   [`docs/cost-budget.md`](../../docs/cost-budget.md) §2/§2a for the exact wording pattern and why
+   it belongs in the user message specifically, not the system prompt.
 2. **The persistence layer**: write the schema and queries for `case`, `advocate_output`,
    `verdict`, and `call_log` (sketch in `docs/architecture.md` §3) against Supabase.
 3. **The audit trail**: every one of the 7 calls gets a `call_log` row — model, output, tokens,
    cost, time. This isn't optional logging, it's a hard requirement — see
    [`docs/rules/audit-and-reliability.md`](../../docs/rules/audit-and-reliability.md).
+4. **The total-tokens-per-run requirement**: sum the real `usage` data OpenRouter returns on every
+   response across the run's calls and persist that total against the case — see
+   [`docs/cost-budget.md`](../../docs/cost-budget.md) §6. Don't estimate it or hardcode it; it has
+   to be a genuine sum of what OpenRouter actually reported. Also set the hard `max_tokens` cap on
+   every call (1,300 advocates, 700 judges) and the 21-call retry ceiling from that same doc §2/§5
+   — those aren't suggestions, they're the resolved economic-blast-radius limit. The hard cap and
+   the soft instruction above are two different mechanisms working together, not duplicates of
+   each other — implement both.
 
 ## Non-negotiable boundaries
 

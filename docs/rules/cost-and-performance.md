@@ -16,8 +16,10 @@
   once, reuse it across the run.
 
 - **Cap calls-per-deliberation — bound the economic blast radius.** A loop can spend faster than
-  anyone is watching; set a hard limit on how many model calls a single run may make. *(Exact cap
-  value: open, see `CLAUDE.md` §6.)*
+  anyone is watching; set a hard limit on how many model calls a single run may make. **Resolved:**
+  up to 2 retries per call (3 attempts), 21 OpenRouter calls hard ceiling per run — see
+  [`docs/cost-budget.md`](../cost-budget.md) §5 for the reasoning and the per-agent token budget
+  that goes with it.
 
 - **Cost is architecture, not accounting — decide it up front.** Judges cost the most per run
   (each reads all 4 advocate outputs). Cost grows faster than agent count, so adding a 5th

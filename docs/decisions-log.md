@@ -74,3 +74,22 @@
   `docs/architecture.md` accordingly. Added `.claude/agents/devops.md` — owns the Dockerfile,
   compose file, and env/secrets wiring; explicitly told not to pre-build Render config since
   that's future work, not current scope.
+- 2026-08-14 — Added [`docs/cost-budget.md`](cost-budget.md): a per-agent token budget (input
+  budget + `max_tokens` output cap for advocates vs. judges), a total-per-run ceiling (≤25,100
+  tokens, reconciled against Module 9's ~17k typical-case figure), an illustrative (not live)
+  cost-per-run calculation method, and the resolved blast-radius cap (21 calls/run = 7 base × up
+  to 3 attempts each). New project goal, added by the user directly: every run must calculate and
+  persist total tokens used from OpenRouter's real `usage` data, not an estimate. Wired into
+  `docs/framing.md` §3 (new item 7), `docs/rules/audit-and-reliability.md`,
+  `docs/rules/cost-and-performance.md`, `docs/interface-brief-opinion-screen.md`, and the
+  backend/testing sub-agents. Resolved the "exact hard-cap value" open item in `CLAUDE.md` §6.
+- 2026-08-14 — Refined the token-budget design after real back-and-forth with the user: output
+  length is controlled by **two mechanisms**, not one — a soft length instruction in the user
+  message we construct (advocates ~1,000 tokens, judges ~500) plus a hard `max_tokens` API cap as
+  backstop (1,300 / 700). Settled on asymmetric numbers deliberately: judges stay tight to avoid
+  the named "returns prose" failure; advocates got more room than the original draft (600→1,000)
+  after reconsidering that a focused argument doesn't need padding to be strong. Added a rule
+  (`docs/rules/security-and-permissions.md`) clarifying the boundary this relies on: the `system`
+  role is the teacher's prompt, untouched; the `user` role is ours to construct, including
+  operational instructions. Updated `docs/cost-budget.md` §2/§3/§4, `docs/architecture.md`, and
+  the backend/testing sub-agents to match.

@@ -40,6 +40,10 @@ have run (or are running). Not in scope here: the submission form itself, or the
    not competing with the verdicts for first attention.
 4. The original charge sheet, available but not prioritized (the reader already knows what they
    submitted).
+5. **Total tokens used for the run** (added 2026-08-14, per `docs/cost-budget.md` §6) — a small,
+   low-priority line, not competing with the verdicts. It exists for transparency (Module 9's
+   "cost is architecture, not accounting"), not as a headline number — place it near the charge
+   sheet, not near the verdicts.
 
 ## 3. Interaction Model
 

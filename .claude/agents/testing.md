@@ -28,6 +28,13 @@ You check real work against real, already-written standards — you don't invent
    [`docs/rules/audit-and-reliability.md`](../../docs/rules/audit-and-reliability.md), every one
    of the 7 calls needs a genuine `call_log` row (model, output, tokens, cost, time). Don't just
    check that a row exists — check the values in it are actually correct, not placeholder-shaped.
+   Specifically confirm the **total tokens shown/stored for the run actually equals the sum of the
+   real per-call `usage` values** — see [`docs/cost-budget.md`](../../docs/cost-budget.md) §6.
+   A hardcoded or estimated total is a failure here, even if a number is displayed. Also confirm
+   each call actually carries **both** the soft length instruction (in the user message, per
+   `docs/cost-budget.md` §2/§2a) **and** the hard `max_tokens` cap on the API call itself — a
+   backend that implements only one of the two hasn't met this requirement, even if outputs happen
+   to look short.
 3. **The interface brief, literally** —
    [`docs/interface-brief-opinion-screen.md`](../../docs/interface-brief-opinion-screen.md) names
    specific required states (failed, deliberating, empty, slow). Check each one actually exists

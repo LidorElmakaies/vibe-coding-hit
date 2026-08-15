@@ -19,6 +19,14 @@
   nothing of ours to leak on the prompt side at all — everything that must never reach the
   browser is the teacher's, in full.
 
+- **The `system` role is the teacher's, untouched; the `user` role is ours to construct.** The
+  never-edit rule above covers the teacher's prompt content specifically — it doesn't forbid us
+  from adding our own operational instructions (like the soft token-length hint in
+  [`docs/cost-budget.md`](../cost-budget.md) §2) to the message *we* build around the case. That
+  boundary — system role untouched, user role is our own construction — is what makes both rules
+  true at once. Don't blur the two: an operational instruction never belongs inside the teacher's
+  prompt text, no matter how small. *(2026-08-14)*
+
 - **No agent (including Claude Code itself) runs `git add`/`commit`/`push` on its own
   initiative — ever.** The user stages, commits, and pushes; an agent's job stops at drafting a
   commit message and naming what changed. This applies to any future backend/frontend/testing/
