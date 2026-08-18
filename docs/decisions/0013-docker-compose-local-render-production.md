@@ -1,6 +1,9 @@
 # ADR-0013: Docker Compose for Local Dev, Render for Future Production Hosting
 
-**Status:** Accepted (2026-08-14) — supersedes [ADR-0012](0012-vercel-deployment.md)
+**Status:** Accepted (2026-08-14) — supersedes [ADR-0012](0012-vercel-deployment.md). **Its
+production-hosting half (Render) is superseded by [ADR-0016](0016-aws-app-runner-production.md)
+(2026-08-17) — the user moved production hosting to AWS App Runner instead.** The local Docker
+Compose decision and reasoning below are unaffected and still current.
 **Modules:** 7 (deployment "earns respect"), 5 (minimal-footprint — reconsidered below)
 
 ## Context

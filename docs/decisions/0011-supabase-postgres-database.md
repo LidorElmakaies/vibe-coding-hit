@@ -1,7 +1,9 @@
 # ADR-0011: Supabase (Postgres) for the Database
 
 **Status:** Accepted (2026-08-14) — resolves [ADR-0008](0008-database-audit-trail-not-plain-file.md)'s
-open SQL-vs-NoSQL question
+open SQL-vs-NoSQL question. **Superseded by [ADR-0017](0017-mongodb-atlas-database.md) (2026-08-17)
+— the user replaced Postgres/Supabase with MongoDB Atlas.** Kept here, unedited, as the historical
+record of the reasoning that held until then.
 **Modules:** 1 (toolbox), 7 (poses the SQL-vs-NoSQL question directly)
 
 ## Context

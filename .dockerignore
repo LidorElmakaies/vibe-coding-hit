@@ -1,0 +1,25 @@
+# Keep the build context small and guarantee nothing outside the app itself — least of all a
+# secret — ever ends up in an image layer.
+
+node_modules
+.next
+.git
+.gitignore
+
+# Secrets: belt-and-suspenders — the Dockerfile never COPYs these, but they should never even be
+# in the build context that gets sent to the Docker daemon.
+.env
+.env.*
+!.env.example
+
+# Course lecture slides (copyrighted, local-only) and project docs — not needed at runtime.
+lessons/
+docs/
+.claude/
+*.md
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

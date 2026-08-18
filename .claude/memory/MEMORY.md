@@ -1,6 +1,10 @@
 - [Memory location rule](memory-location.md) — all project memory lives in this repo (`.claude/memory/`), never in Claude Code's global store
 - [Multi-doc project structure preference](pref-project-docs-structure.md) — many small focused docs, not one mega-file; CLAUDE.md is the entry point
-- [Agent-teams feature plan](agent-teams-feature-plan.md) — deferred: doc + skill to activate Claude Code agent-teams for this project
+- [Agent-teams feature plan](agent-teams-feature-plan.md) — activated 2026-08-15: real named teammates (backend/frontend/devops/testing) building the app; doc + skill deliverables still deferred
 - [Module processing workflow](module-processing-workflow.md) — how to turn each class module into docs, incl. pptx extraction and the rule-vs-context flag
-- [All 7 prompts are teacher-provided](all-prompts-teacher-provided.md) — correction: we never author/edit any advocate or judge system prompt, only orchestrate them
+- [All 7 prompts are teacher-provided](all-prompts-teacher-provided.md) — correction: we never author new prompt content; teacher's text is the default (now editable per-run, see next entry)
 - [No autonomous git commits](no-autonomous-git-commits.md) — assistant drafts commit messages only; the user runs git add/commit/push themselves
+- [Editable agent config scope change](editable-agent-config-scope-change.md) — 2026-08-17: model/prompt/token-limit now editable per agent (ADR-0014), reversing the earlier backend-only prompt rule
+- [Single-page Console UI](single-page-console-ui.md) — 2026-08-17: the entire UI is one page, no admin/public split (ADR-0015) — corrects an earlier 4-screen inference
+- [AWS App Runner for production](aws-app-runner-production.md) — 2026-08-17: production hosting moved from Render to AWS App Runner (ADR-0016); local Docker Compose unaffected
+- [MongoDB Atlas database](mongodb-atlas-database.md) — 2026-08-17: database engine changed from Postgres/Supabase to MongoDB Atlas (ADR-0017), discarding already-built SQL work; local Postgres container removed

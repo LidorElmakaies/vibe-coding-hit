@@ -1,5 +1,11 @@
 # Interface Brief — The Opinion (Results) Screen
 
+> **Superseded 2026-08-17 by [`docs/interface-brief-console.md`](interface-brief-console.md)** —
+> the user corrected the UI shape to a single page; results are now one section of that page, not
+> a separate screen. Kept on disk for its still-relevant content (information hierarchy, required
+> failure/deliberating states), which the console brief carries forward — not deleted, per this
+> repo's convention of keeping superseded decisions visible (see ADR-0012's precedent).
+
 > Produced per [Module 8](modules/module8-interface-design-and-documentation.md)'s required
 > deliverable: an interface brief for one screen, written to direct an agent, not to flatter a
 > reader. Screen chosen: the one the module's own deck uses as its example — where the Tribunal's

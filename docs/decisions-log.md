@@ -93,3 +93,97 @@
   role is the teacher's prompt, untouched; the `user` role is ours to construct, including
   operational instructions. Updated `docs/cost-budget.md` §2/§3/§4, `docs/architecture.md`, and
   the backend/testing sub-agents to match.
+- 2026-08-15 — User asked to actually activate Claude Code's agent-teams feature and use it to
+  build the project. Set `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `.claude/settings.local.json`
+  (gitignored, machine-local). Took a session reload to actually go live. Spawned a real team —
+  named teammates `backend`, `frontend`, `devops`, `testing`, reusing `.claude/agents/*.md` as
+  their subagent-definition roles — to scaffold the app. Scaffolding proceeds with placeholders for
+  the still-missing OpenRouter key and the 7 teacher prompts (user's explicit choice, over
+  supplying them first).
+- 2026-08-17 — **Reversal: agent config (model, system prompt, output-token limit) is now
+  editable per agent from a new frontend Admin/Run Console**, with the teacher's prompt text as
+  the seeded default — see [ADR-0014](decisions/0014-editable-agent-config-admin-console.md). This
+  deliberately reverses the 2026-08-14 "system prompts never reach the browser, verbatim,
+  never edited" rule for prompt text specifically; the OpenRouter key is explicitly excluded from
+  the reversal and stays backend-only. The console is additive — a 4th screen alongside the
+  already-specced submission form, results screen, and past-cases list, not a replacement of them
+  (confirmed with the user). Added a persisted `agent_config` table (`docs/architecture.md` §3),
+  a requirement that `call_log` rows snapshot the actual prompt/model/token-limit used per call
+  rather than referencing the live (now-mutable) config (`docs/rules/audit-and-reliability.md`),
+  and new backend requirements for live per-call streaming and a run-summary (cost/tokens/
+  decisions) rollup. Updated `CLAUDE.md` §2/§5/§6, `docs/rules/security-and-permissions.md`,
+  `docs/decisions/README.md`. Resolved the previously-open "vary model per call?" question as a
+  side effect: the mechanism is now user-configurable per agent, not a code-level fixed choice.
+- 2026-08-17 — Relaunched the agent team (backend, frontend, devops, testing all cancelled by an
+  earlier interruption) with ADR-0014's scope baked into the kickoff prompts from the start.
+  Discovered mid-run that teammates don't actually have a `SendMessage` tool in this harness (both
+  `frontend` and `devops` reported this directly) — peer-to-peer agent-team messaging as described
+  in Claude Code's docs isn't functioning here; the lead relays between teammates manually instead.
+  `devops` delivered `Dockerfile`, `docker-compose.yml`, `.env.example`, `.dockerignore` for local
+  dev, flagged as unverified against backend's actual code (which didn't exist yet) and untestable
+  in this sandbox (no Docker installed).
+- 2026-08-17 — **Correction: single-page UI, not the 3-screen + admin-console split.** User
+  directly corrected an assumption: there's no admin/public audience split in this project at all
+  — one page does case input, all 7 agents' config, Run, live streamed output, results, and a
+  cost/tokens/time summary, with past runs as a history panel on that same page. See
+  [ADR-0015](decisions/0015-single-page-console-ui.md). Added `docs/interface-brief-console.md`
+  (supersedes `interface-brief-opinion-screen.md` and `interface-brief-admin-console.md`, both
+  kept on disk marked superseded, not deleted). Updated `CLAUDE.md` §2/§5, `docs/architecture.md`
+  §1/§5, `docs/decisions/README.md`. Backend/frontend teammates re-briefed accordingly.
+- 2026-08-17 — **Production hosting moved from Render to AWS App Runner** — user asked directly,
+  no longer wants Render. See [ADR-0016](decisions/0016-aws-app-runner-production.md), which
+  supersedes only the production-hosting half of
+  [ADR-0013](decisions/0013-docker-compose-local-render-production.md) (local Docker Compose is
+  unaffected and stays as devops already built it). Chose App Runner over ECS Fargate (more
+  AWS-native but more infra to build) and plain EC2 (least managed) for minimal footprint; kept
+  Supabase-hosted Postgres over migrating to RDS (ADR-0011 unaffected) since there was no real
+  reason to re-open that decision alongside this one. Updated `CLAUDE.md` §3, `docs/architecture.md`
+  deployment row, `docs/decisions/README.md`, `.claude/agents/devops.md`. devops teammate notified
+  to begin: push the existing Docker image to Amazon ECR, create the App Runner service, wire
+  `OPENROUTER_API_KEY`/`DATABASE_URL` as environment config — AWS account/credential access not
+  yet confirmed, flagged as an open item.
+- 2026-08-17 — AWS deployment worked through two real blockers in sequence: (1) no AWS
+  credentials existed in this environment at all — installed the AWS CLI, user generated an IAM
+  user (`agent-deploy`) and provided keys via a gitignored `.env`, extracted into `~/.aws/` without
+  ever displaying the values in the conversation; (2) that IAM user was denied on every actual
+  action — first a permissions boundary blocked everything, then after the user removed it, the
+  deeper cause surfaced: no identity-based policy was attached at all. User attached
+  `AmazonEC2ContainerRegistryFullAccess`/`AWSAppRunnerFullAccess`/`IAMFullAccess` directly. Also
+  installed Docker Desktop (previously missing, blocking the image build) after weighing it
+  against building in AWS CodeBuild instead — user chose installing Docker locally. `devops`
+  re-checking access as of this entry; result not yet in.
+- 2026-08-17 — **Database engine changed again: MongoDB Atlas replaces Postgres/Supabase**, on top
+  of everything above, same day. User provided an Atlas connection string directly. See
+  [ADR-0017](decisions/0017-mongodb-atlas-database.md), superseding
+  [ADR-0011](decisions/0011-supabase-postgres-database.md). This discards real, already-completed
+  `backend` work (`lib/db/schema.ts`, `lib/db/queries.ts`, `lib/db/client.ts`, the `pg` dependency,
+  boot-time migration via `instrumentation.ts`) built earlier the same day — not a small swap.
+  Local Docker Compose's Postgres container is removed entirely (Atlas is remote-only, no local
+  container needed for either environment, one fewer moving part than before). Real Atlas
+  credentials arrived via direct chat message rather than a file — flagged to the user as worth
+  rotating later, since that channel isn't as protected as the `.env`-file approach used for the
+  AWS/OpenRouter keys; folded into `.env` as `MONGODB_URI` without repeating the value anywhere
+  else. Updated `CLAUDE.md` §3, `docs/architecture.md` §1/§3/§6, `docs/decisions/README.md`.
+  `backend`/`devops` re-briefed to rebuild the DB layer and drop the local Postgres container.
+- 2026-08-18 — Full adversarial verification pass by `testing` against the real (now-working)
+  pipeline: forced failure handling, retry logic (exactly 3 attempts, separate `call_logs`
+  documents), the 21-call ceiling, and an independent re-check of ADR-0014's snapshot-immutability
+  claim (didn't trust `backend`'s own test — re-ran it itself, confirmed) all verified with live
+  data read directly from Atlas, not code review. Found `docs/framing.md` §3 item 5 stale —
+  contradicted ADR-0014's deliberate prompt-exposure reversal. Fixed: item 5 now explicitly scopes
+  "never exposed" to the OpenRouter key only, with a note pointing at ADR-0014 for why prompt text
+  is excluded on purpose.
+- 2026-08-18 — **First live production deployment.** Diagnosed the App Runner `CREATE_FAILED`
+  root cause via CloudWatch logs: App Runner injects its own `HOSTNAME` env var at container
+  runtime, overriding the Dockerfile's `ENV HOSTNAME=0.0.0.0` default — a known Next.js-standalone
+  collision. Fixed by forcing it inline on `CMD` instead. Rebuilt and pushed the corrected image,
+  deleted the dead service, created a fresh one, confirmed `RUNNING` with a real `200` response
+  from the live app. **Real, avoidable mistake made along the way**: ran `aws apprunner
+  describe-service` without filtering output and it printed the service's full environment
+  variables — the real `OPENROUTER_API_KEY` and `MONGODB_URI` — into the conversation. User was
+  informed immediately and asked to rotate both; **declined, citing time**, and explicitly
+  instructed deployment to proceed with the unrotated credentials — an informed decision about
+  their own credentials, not something withheld from them. `docs/deployment-runbook.md` §4 now
+  documents the `--query`-filtering practice to prevent recurrence. Live URL is service-specific
+  (changes if the service is ever recreated) — check `aws apprunner describe-service --query
+  Service.ServiceUrl` rather than treating any URL as permanent.

@@ -9,23 +9,34 @@
   uncertain** — default to not acting (or asking) rather than proceeding on an unclear call.
   *(Modules 3, 5)*
 
-- **Secrets and system prompts never reach the browser.** The OpenRouter key and all 7 system
-  prompts (4 advocates + 3 judges) live and execute only on the backend. The browser only ever
-  sends a case and receives outputs back. *(Module 7)*
+- **The OpenRouter key never reaches the browser — full stop, no reversal.** It lives and is used
+  only on the backend: not in a response body, not in a client-visible env var, not in a log
+  shipped anywhere public. *(Module 7)*
 
-- **All 7 system prompts (4 advocates + 3 judges) are stored and used verbatim — never authored,
-  edited, or tuned by us.** A project-defining constraint (see `CLAUDE.md` §2), restated here
-  because it's also the thing that makes the browser/backend split above meaningful: there's
-  nothing of ours to leak on the prompt side at all — everything that must never reach the
-  browser is the teacher's, in full.
+- **System prompt text is a different case, as of 2026-08-17 — it *does* now reach the browser.**
+  The original rule ("system prompts never reach the browser, stored and used verbatim, never
+  authored/edited/tuned by us") is **deliberately reversed** for prompt text specifically, per
+  [ADR-0014](../decisions/0014-editable-agent-config-admin-console.md): the Admin/Run Console lets
+  the person running it view and edit each agent's current system prompt, model, and output-token
+  limit. What doesn't change: **we** (the engineers/agents building this) still never author new
+  persuasive content ourselves — the teacher's text is the default every agent loads; editing it
+  is a feature for the console's user, not something we do in code. Treat prompt text as ordinary
+  application data from here on (stored in the `agent_config` table, sent over normal HTTP,
+  editable via a normal form) — it is no longer a secret the way the OpenRouter key is.
 
-- **The `system` role is the teacher's, untouched; the `user` role is ours to construct.** The
-  never-edit rule above covers the teacher's prompt content specifically — it doesn't forbid us
-  from adding our own operational instructions (like the soft token-length hint in
-  [`docs/cost-budget.md`](../cost-budget.md) §2) to the message *we* build around the case. That
-  boundary — system role untouched, user role is our own construction — is what makes both rules
-  true at once. Don't blur the two: an operational instruction never belongs inside the teacher's
-  prompt text, no matter how small. *(2026-08-14)*
+- **Every call's audit-trail row must record which prompt/model/token-limit was actually in
+  effect for that call**, not just a foreign key to a mutable config row — since config can be
+  edited between runs, "what config exists now" and "what config produced this output" are
+  different questions once editing is possible, and only the second one makes the audit trail
+  trustworthy. See [`docs/rules/audit-and-reliability.md`](audit-and-reliability.md).
+
+- **The `system` role carries whatever prompt is currently configured for that agent (teacher's
+  default, or the console user's edit); the `user` role is still ours to construct.** We still
+  never fold our own operational instructions (like the soft token-length hint in
+  [`docs/cost-budget.md`](../cost-budget.md) §2) into the system role's content — that boundary
+  survives the 2026-08-17 reversal above unchanged: whoever/whatever currently occupies the system
+  role, the soft length instruction still belongs in the user message we build around the case,
+  never mixed into the prompt text itself. *(2026-08-14, updated 2026-08-17)*
 
 - **No agent (including Claude Code itself) runs `git add`/`commit`/`push` on its own
   initiative — ever.** The user stages, commits, and pushes; an agent's job stops at drafting a

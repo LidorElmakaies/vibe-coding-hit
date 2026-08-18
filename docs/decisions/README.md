@@ -29,9 +29,13 @@ in [`docs/decisions-log.md`](../decisions-log.md) and [`CLAUDE.md`](../../CLAUDE
 | [0008](0008-database-audit-trail-not-plain-file.md) | Persist the audit trail in a database, not a plain log file (SQL vs. NoSQL still open) | Proposed — direction chosen, engine settled by 0011 |
 | [0009](0009-fullstack-nextjs-typescript.md) | Next.js (TypeScript), web only — not React Native, not a separate Python/Node backend | Accepted |
 | [0010](0010-raw-sdk-not-langchain.md) | Raw `openai` SDK against OpenRouter, not LangChain/LangGraph/Vercel AI SDK | Accepted |
-| [0011](0011-supabase-postgres-database.md) | Supabase (Postgres) — resolves 0008's open engine question | Accepted |
+| [0011](0011-supabase-postgres-database.md) | Supabase (Postgres) — resolves 0008's open engine question | **Superseded by 0017** |
 | [0012](0012-vercel-deployment.md) | Deploy to Vercel, not the course-default Netlify | **Superseded by 0013** |
-| [0013](0013-docker-compose-local-render-production.md) | Docker Compose for local dev; Render for future production hosting (both via one Dockerfile) | Accepted |
+| [0013](0013-docker-compose-local-render-production.md) | Docker Compose for local dev; Render for future production hosting (both via one Dockerfile) | Accepted (local dev half current; production half **superseded by 0016**) |
+| [0014](0014-editable-agent-config-admin-console.md) | Editable per-agent model/prompt/token-limit, teacher text as default — reverses the earlier backend-only prompt rule | Accepted |
+| [0015](0015-single-page-console-ui.md) | Single-page UI ("the Console") — supersedes the 3-screen + admin-console split ADR-0014 implied | Accepted |
+| [0016](0016-aws-app-runner-production.md) | AWS App Runner for production (via ECR) — supersedes Render in 0013 | Accepted |
+| [0017](0017-mongodb-atlas-database.md) | MongoDB Atlas replaces Postgres/Supabase as the database engine | Accepted |
 
 ## Still-Open Decisions (not yet ADRs, because not yet decided)
 
@@ -39,6 +43,4 @@ These are real forks we haven't closed — see [`CLAUDE.md`](../../CLAUDE.md) §
 Once each is actually decided, it should either become a numbered ADR here (if it involved real
 alternatives) or a `docs/decisions-log.md` entry (if it was simply learning a new constraint):
 
-- Whether to vary the OpenRouter model per call, or keep one shared model.
-- Exact hard-cap value for calls-per-deliberation.
 - The actual Render service configuration, once production hosting stops being future work.

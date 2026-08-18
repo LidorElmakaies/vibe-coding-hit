@@ -1,0 +1,527 @@
+/* Visual treatment (colors/layout) is not specified by the interface brief (Module 8: right
+   altitude is what's shown and in what order, not pixels) — EXCEPT as of 2026-08-18's §2b, which
+   makes two things explicit rather than assumed: real text/background contrast, and panel states
+   distinguishable by actual hue, not shades of gray. The palette below is this agent's call,
+   built to satisfy that requirement directly. */
+
+.page {
+  /* ---- Palette ---- */
+  --ink: #16181d; /* primary text — near-black, not mid-gray, for real contrast on white */
+  --ink-muted: #4b5160; /* secondary text — still >4.5:1 on white, not washed out */
+  --paper: #ffffff; /* panel surfaces */
+  --canvas: #eef1f6; /* page background, distinct from panel surfaces */
+  --border: #c7ccd6;
+
+  --blue: #1d4fd8;
+  --blue-bg: #dde7ff;
+  --blue-ink: #123a9c;
+
+  --green: #157a45;
+  --green-bg: #d9f2e3;
+  --green-ink: #0e5c33;
+
+  --red: #c22b1f;
+  --red-bg: #fbdedb;
+  --red-ink: #8f1f16;
+
+  --amber: #a15c00;
+  --amber-bg: #ffe8b8;
+  --amber-ink: #7a4600;
+
+  --slate: #414958;
+  --slate-bg: #e3e6ec;
+
+  background: var(--canvas);
+  color: var(--ink);
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+  color: var(--ink);
+}
+
+.header p {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
+/* ---- Section shells ---- */
+
+.section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  background: var(--paper);
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--slate);
+  margin-bottom: 0.75rem;
+}
+
+/* ---- Verdicts / Results ---- */
+
+.verdictsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.verdictCard {
+  border: 2px solid var(--green);
+  background: var(--green-bg);
+  border-radius: 6px;
+  padding: 0.75rem 0.85rem;
+  color: var(--ink);
+}
+
+.verdictCard h3 {
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  color: var(--green-ink);
+}
+
+.verdictCard .verdictText {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--green-ink);
+}
+
+.verdictCard ul {
+  margin-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.verdictCardFailed {
+  border-color: var(--red);
+  background: var(--red-bg);
+}
+
+.verdictCardFailed h3,
+.verdictCardFailed .verdictText {
+  color: var(--red-ink);
+}
+
+.verdictCardUnparsed {
+  border-color: var(--amber);
+  background: var(--amber-bg);
+}
+
+.verdictCardUnparsed h3,
+.verdictCardUnparsed .verdictText {
+  color: var(--amber-ink);
+}
+
+.verdictCardPending {
+  border-color: var(--border);
+  background: var(--slate-bg);
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.verdictCardPending h3 {
+  color: var(--slate);
+}
+
+.verdictsEmpty {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+/* ---- Run summary ---- */
+
+.summaryBox {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.summaryStat strong {
+  display: block;
+  font-size: 1.15rem;
+  color: var(--blue-ink);
+}
+
+/* ---- Case input ---- */
+
+.controlBar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.caseTextarea {
+  width: 100%;
+  min-height: 90px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  resize: vertical;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+/* ---- Run control ---- */
+
+.controlRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.runButton {
+  background: var(--blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.65rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.runButton:hover:not(:disabled) {
+  background: var(--blue-ink);
+}
+
+.runButton:disabled {
+  background: #aeb4c0;
+  color: #f1f2f5;
+  cursor: not-allowed;
+}
+
+.blockReason {
+  color: var(--red-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ---- Model selector ---- */
+
+.modelSelectorRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.modelModeToggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modelModeButton {
+  border: 1px solid var(--blue);
+  background: var(--paper);
+  color: var(--blue-ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modelModeButton:disabled {
+  border-color: var(--border);
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}
+
+.modelModeButtonActive {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.modelDropdown {
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--ink);
+  background: var(--paper);
+  max-width: 320px;
+}
+
+.modelStatus {
+  font-size: 0.8rem;
+}
+
+.modelStatusApplying { color: var(--blue-ink); }
+.modelStatusApplied { color: var(--green-ink); }
+.modelStatusFailed { color: var(--red-ink); font-weight: 700; }
+
+.modelNote {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+
+/* ---- Agent panels ---- */
+
+.panelGroupHeading {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate);
+  margin: 0.9rem 0 0.5rem;
+}
+
+.panelGroupHeading:first-child {
+  margin-top: 0;
+}
+
+.panelsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.9rem;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--paper);
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panelHeader h4 {
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.modelReadout {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.statusBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.statusIdle {
+  background: var(--slate-bg);
+  color: var(--slate);
+}
+
+.statusLoading {
+  background: var(--slate-bg);
+  color: var(--ink-muted);
+}
+
+.statusUnavailable {
+  background: var(--red-bg);
+  color: var(--red-ink);
+}
+
+.statusBlocked {
+  background: var(--amber-bg);
+  color: var(--amber-ink);
+}
+
+.statusRunning {
+  background: var(--blue-bg);
+  color: var(--blue-ink);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.statusDone {
+  background: var(--green-bg);
+  color: var(--green-ink);
+}
+
+.statusFailed {
+  background: var(--red-bg);
+  color: var(--red-ink);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.panelField label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.2rem;
+}
+
+.panelField input,
+.panelField textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.panelField textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.saveRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.saveButton {
+  font-size: 0.78rem;
+  padding: 0.32rem 0.75rem;
+  border-radius: 5px;
+  border: 1px solid var(--blue);
+  background: var(--paper);
+  color: var(--blue-ink);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.saveButton:disabled {
+  border-color: var(--border);
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}
+
+.saveState {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.saveStateSaving { color: var(--blue-ink); }
+.saveStateSaved { color: var(--green-ink); }
+.saveStateFailed { color: var(--red-ink); font-weight: 700; }
+
+.outputBox {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.5rem;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+  min-height: 3rem;
+  max-height: 220px;
+  overflow-y: auto;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+.outputBoxFailed {
+  border: 1px solid var(--red);
+  background: var(--red-bg);
+  color: var(--red-ink);
+}
+
+.outputBoxRunning {
+  border: 1px solid var(--blue);
+  background: var(--blue-bg);
+}
+
+.outputEmpty {
+  color: var(--ink-muted);
+  font-style: italic;
+  background: var(--paper);
+}
+
+/* ---- History panel ---- */
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.historyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.85rem;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.historyItem:hover {
+  background: var(--canvas);
+}
+
+.historyStatus {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.historyStatusFailed { color: var(--red-ink); }
+.historyStatusPartial { color: var(--amber-ink); }
+.historyStatusComplete { color: var(--green-ink); }
+
+.banner {
+  border: 1px solid var(--blue);
+  background: var(--blue-bg);
+  color: var(--blue-ink);
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  color: var(--blue-ink);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.errorNote {
+  color: var(--red-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.mutedNote {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}

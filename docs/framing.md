@@ -55,8 +55,13 @@ A run is "done" when, for the teacher-supplied case:
    [Module 4](modules/module4-anatomy-of-agentic-workflow.md) / [Module 7](modules/module7-web-application-architecture.md) audit-trail rule.
 4. A human (the student) can point to where each of the 7 outputs is stored/displayed and re-read
    it after the run ends — not just watched it scroll by once.
-5. No OpenRouter key or system prompt is ever exposed to anything untrusted (browser, logs shipped
-   externally, etc.) — per the [Module 7](modules/module7-web-application-architecture.md) secrets rule.
+5. The OpenRouter key is never exposed to anything untrusted (browser, logs shipped externally,
+   etc.) — per the [Module 7](modules/module7-web-application-architecture.md) secrets rule.
+   **Updated 2026-08-17**: system prompt text is deliberately *not* covered by this item anymore —
+   [ADR-0014](decisions/0014-editable-agent-config-admin-console.md) reverses that half of the
+   original rule on purpose, so prompt text reaching the browser (editable, seeded from the
+   teacher's default, on the Console) is intended behavior, not a violation. Only the key half of
+   this item still applies without exception.
 6. A charge sheet (case) can be submitted through a browser form, and the resulting opinion is
    shown back and stored so it can be found again later from a past-cases list — per the confirmed
    Tribunal scope (§4).

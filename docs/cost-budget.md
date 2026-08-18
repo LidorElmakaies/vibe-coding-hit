@@ -19,6 +19,13 @@ reached.
 
 ## 2. Per-Agent Token Budget
 
+> **2026-08-17 update:** the `max_tokens` values below are now the **seeded defaults** in the
+> `agent_config` table, editable per agent via the Admin/Run Console
+> ([ADR-0014](decisions/0014-editable-agent-config-admin-console.md)) — they're no longer
+> hardcoded constants in code. The reasoning behind the specific numbers (below) still applies;
+> editability is a UI convenience for the console's user, not a repeal of the blast-radius
+> reasoning in §5.
+
 Output length is controlled by **two different mechanisms working together**, decided
 2026-08-14:
 

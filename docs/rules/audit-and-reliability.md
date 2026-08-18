@@ -8,6 +8,15 @@
   persist per call: **model, output, token counts, cost, time** — plus the case and the resulting
   output, so a past run can be found and re-read later via the past-cases list. *(Modules 4, 7)*
 
+- **The system prompt, model, and max-token-limit actually used must be frozen onto the call's
+  `call_log` row, not just referenced by a link to the live `agent_config`.** Added 2026-08-17
+  when agent config became editable per run (see
+  [ADR-0014](../decisions/0014-editable-agent-config-admin-console.md)): a config row can change
+  after a call ran, so a foreign key alone would let a later edit silently rewrite history. Snapshot
+  the actual values onto the row at call time — this is what makes "which prompt produced this
+  specific output" a genuinely answerable question later, not just "which prompt is configured
+  right now."
+
 - **The total tokens used per run must be calculated from real OpenRouter data and persisted, not
   estimated.** Every OpenRouter response already includes a `usage` object — sum it across the
   run's calls (7, or more with retries) rather than inventing a separate mechanism. This is a

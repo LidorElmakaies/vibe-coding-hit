@@ -14,6 +14,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude Code local/machine-specific settings (experimental feature flags, personal overrides)
+.claude/settings.local.json
+
 # Dependencies / build output (placeholders for once a stack is chosen)
 node_modules/
 dist/
@@ -23,3 +26,7 @@ build/
 
 # Scratch extraction folders from pulling text out of .pptx files
 _pptx*/
+
+# TypeScript build info (Next.js)
+*.tsbuildinfo
+next-env.d.ts

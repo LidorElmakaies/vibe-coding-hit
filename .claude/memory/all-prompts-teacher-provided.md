@@ -23,3 +23,11 @@ but never modified (see `docs/rules/agent-design.md` and `docs/rules/security-an
 in the repo). The input to a run is the court problem/case (what happened); the output is the 3
 judges' verdicts — see `CLAUDE.md` §2, which is the canonical project overview (this file only
 tracks the correction itself, not a duplicate project summary).
+
+**Update (2026-08-17) — "never modified" is no longer absolute, see [[editable-agent-config-scope-change]]:**
+the teacher's text is still what we (the builders) never author or draft ourselves, and it's still
+the loaded default for every agent — but the person running the new Admin/Run Console can now edit
+that loaded value per agent, per [ADR-0014](../../docs/decisions/0014-editable-agent-config-admin-console.md).
+Don't let this file's "never modified" language be read as still-absolute; the constraint that
+survives is narrower: *we* don't invent prompt content, and the OpenRouter key stays backend-only
+regardless.

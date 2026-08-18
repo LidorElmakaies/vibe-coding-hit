@@ -24,17 +24,27 @@ class adds rules/techniques we are expected to actually apply here (see §4).
 the 3 judges' verdicts — that's the project's deliverable, not the advocate arguments (those are
 intermediate work product the judges need, not the end goal).
 
-Teacher provides **all 7 system prompts** (4 advocates + 3 judges) — we do not author or edit any
-of them. We provide the orchestration, backend, frontend, database, and verification that runs
-them correctly and shows the result legibly.
+Teacher provides **all 7 system prompts** (4 advocates + 3 judges) — we never author new prompt
+content ourselves. We provide the orchestration, backend, frontend, database, and verification
+that runs them correctly and shows the result legibly.
+
+**2026-08-17 reversal — read before assuming prompts are backend-only:** the teacher's text is
+still the loaded **default** for every agent, but it's now **editable per agent, directly on the
+single page that is this project's entire UI** ("the Console" —
+[ADR-0015](docs/decisions/0015-single-page-console-ui.md); there is no separate admin/public
+split, one page for everyone) — model choice and each agent's output-token limit are editable
+there too. This deliberately reverses the original "system prompts never reach the browser, never
+edited" rule; see [ADR-0014](docs/decisions/0014-editable-agent-config-admin-console.md) for the
+full reasoning and what stays fixed (the OpenRouter key is **not** part of this reversal — it
+never reaches the browser, full stop).
 
 ### Agent Roles
 
-| Agent | Count | Stance | Prompt authored by | Mode |
+| Agent | Count | Stance | Prompt default | Mode |
 |---|---|---|---|---|
-| Defense | 2 | Argue INNOCENT (justify the killing / argue lack of intent) | **Teacher-provided — we don't author or edit these** | Single-shot: one system prompt → one response. No conversation, no memory. |
-| Prosecution | 2 | Argue GUILTY (and of what specific charge) | **Teacher-provided — we don't author or edit these** | Single-shot, same constraints |
-| Judge | 3 | Reads all 4 arguments + the case, renders a verdict | **Teacher-provided — we don't author or edit these** | Single-shot |
+| Defense | 2 | Argue INNOCENT (justify the killing / argue lack of intent) | **Teacher-provided, editable per run via the Admin Console** | Single-shot: one system prompt → one response. No conversation, no memory. |
+| Prosecution | 2 | Argue GUILTY (and of what specific charge) | **Teacher-provided, editable per run via the Admin Console** | Single-shot, same constraints |
+| Judge | 3 | Reads all 4 arguments + the case, renders a verdict | **Teacher-provided, editable per run via the Admin Console** | Single-shot |
 
 ### Pipeline
 
@@ -61,10 +71,20 @@ Court problem (the case: what happened, in full)
 
 - Advocate agents (defense/prosecution) are single-prompt only. No multi-turn, no tool use,
   no shared memory between them.
-- **We do not write or edit any of the 7 system prompts** (4 advocates + 3 judges) — all come
-  from the teacher, verbatim, before a run. Whether the 2 defense/2 prosecution prompts embody
-  distinct strategies is the teacher's authorship call, not ours — if two ever read as
+- **We never author new content for any of the 7 system prompts ourselves** — the teacher's text,
+  verbatim, is the default loaded for every agent. Whether the 2 defense/2 prosecution prompts
+  embody distinct strategies is the teacher's authorship call, not ours — if two ever read as
   near-duplicates, we flag it; we do not rewrite them ourselves.
+- **The person running the Admin/Run Console may edit any agent's current prompt text, model, or
+  output-token limit before a run** — see [ADR-0014](docs/decisions/0014-editable-agent-config-admin-console.md).
+  This is a deliberate, user-directed reversal of the earlier "backend-only, immutable" rule, not
+  us quietly rewriting the teacher's words in code. Whatever text is actually in effect for a call
+  gets recorded on that call's audit-trail row (see
+  [`docs/rules/audit-and-reliability.md`](docs/rules/audit-and-reliability.md)), so a run stays
+  reconstructable even after the default is edited again later.
+- **The OpenRouter API key is not part of that reversal** — it never reaches the browser, never
+  becomes editable UI state, full stop. See
+  [`docs/rules/security-and-permissions.md`](docs/rules/security-and-permissions.md).
 - Judges must receive the full bundle (case + all 4 outputs), never a partial view.
 - **Every run calculates and persists total tokens used, from real OpenRouter `usage` data** —
   not estimated. Added 2026-08-14. See [`docs/cost-budget.md`](docs/cost-budget.md).
@@ -103,11 +123,15 @@ before touching the relevant part of the build:
   and the backend (Route Handlers) — see [ADR-0009](docs/decisions/0009-fullstack-nextjs-typescript.md).
 - **Agent calls: the official `openai` SDK pointed at OpenRouter's base URL** — not LangChain. See
   [ADR-0010](docs/decisions/0010-raw-sdk-not-langchain.md).
-- **Database: Supabase (Postgres)** engine; local dev uses a plain Postgres container, not the
-  hosted instance. See [ADR-0011](docs/decisions/0011-supabase-postgres-database.md).
-- **Deployment: Docker Compose locally; Render for production, once that's actually built** — not
-  Vercel (ADR-0012 superseded). One Dockerfile for both. See
-  [ADR-0013](docs/decisions/0013-docker-compose-local-render-production.md).
+- **Database: MongoDB Atlas** (hosted, remote) — not Supabase/Postgres (ADR-0011 superseded). Same
+  connection string (`MONGODB_URI`) for local dev and production; no local DB container needed.
+  See [ADR-0017](docs/decisions/0017-mongodb-atlas-database.md).
+- **Deployment: Docker Compose locally; AWS App Runner for production** — not Vercel (ADR-0012
+  superseded), not Render (ADR-0013's production half superseded 2026-08-17). One Dockerfile for
+  both, deployed to App Runner via Amazon ECR; database stays Supabase-hosted Postgres regardless
+  (ADR-0011 unaffected). See [ADR-0013](docs/decisions/0013-docker-compose-local-render-production.md)
+  (local dev, still current) and [ADR-0016](docs/decisions/0016-aws-app-runner-production.md)
+  (production hosting).
 - Package manager: npm (ships with Node, no reason to add another tool for this project's size).
 
 ## 4. Class Structure
@@ -139,9 +163,16 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 - `docs/framing.md` — problem statement, stakeholders, definition of done, out-of-scope (Module 6)
 - `docs/architecture.md` — system architecture, first draft (Module 7, updated Module 9)
 - `docs/rules/` — module-derived engineering rules, split by topic (see §2 above)
-- `docs/interface-brief-opinion-screen.md` — interface brief for the results screen (Module 8)
+- `docs/interface-brief-console.md` — interface brief for **the Console, the entire UI** (one
+  single page: case input, per-agent model/prompt/token-limit editing, run, live streaming,
+  results, cost/tokens/time summary, past-runs history) — added 2026-08-17, supersedes the two
+  below, per [ADR-0015](docs/decisions/0015-single-page-console-ui.md)
+- `docs/interface-brief-opinion-screen.md` — *superseded, kept for reference* — original results-screen brief
+- `docs/interface-brief-admin-console.md` — *superseded, kept for reference* — original (incorrect) admin/public-split brief
 - `docs/documentation-brief-backend-orchestrator.md` — documentation brief for the orchestrator (Module 8)
 - `docs/cost-budget.md` — per-agent token budget, retry/blast-radius cap, cost estimate method
+- `docs/deployment-runbook.md` — step-by-step AWS App Runner deploy procedure, incl. the real
+  problems hit (HOSTNAME override, secret-printing gotcha) and how to redeploy after a code change
 - `docs/summary.md` — project summary *(not yet created)*
 - `docs/ideas.md` — brainstorm/backlog, incl. advocate agent strategy angles *(not yet created)*
 - `docs/modules/` — one file per class module, mapped onto this project
@@ -161,14 +192,17 @@ Full changelog of what each module added: [`docs/decisions-log.md`](docs/decisio
 - [ ] The actual case text used for a given run — user-submitted per Tribunal scope (§2), but is
       there still one canonical teacher-supplied case to seed/demo with? (placeholder until
       provided).
-- [ ] Teacher's 7 system prompts — all of them, not just the judges' (not received yet).
+- [ ] Teacher's 7 system prompts — all of them, not just the judges' (not received yet; will seed
+      the Admin Console's default values once provided, per ADR-0014).
 - [ ] Actual Render service configuration — deliberately future work, see ADR-0013.
-- [ ] Whether to vary the OpenRouter model per call (cheaper for advocates, more capable for
-      judges, per Module 9's "match capability to difficulty") or keep one shared model for
-      simplicity — a deliberate choice still to make, not yet decided either way.
 - [ ] **Have you personally read/edited `CLAUDE.md` and `docs/rules/*.md` yet?** Per Module 11,
       unreviewed assistant-drafted context files measurably underperform hand-written ones — most
       of this repo's docs have been drafted by me and approved in bulk rather than you.
+
+**Resolved (2026-08-17):**
+- ~~Whether to vary the OpenRouter model per call, or keep one shared model?~~ **Mechanism
+  decided: user-configurable per agent, via the Admin Console** (ADR-0014) — no longer a fixed
+  choice baked into code. The exact default model(s) it starts on is still an open call.
 
 **Resolved:**
 - ~~Is "the Tribunal" this project's actual target shape?~~ **Yes, confirmed** — see §1/§4 and
@@ -200,3 +234,13 @@ memory store. At the start of a session, read `.claude/memory/MEMORY.md` first. 
 durable comes up, write/update a file there (same frontmatter convention as Claude Code's global
 memory) instead of the global store. This section is what makes that rule self-enforcing, since
 `CLAUDE.md` is auto-loaded every session.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

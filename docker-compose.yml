@@ -1,0 +1,26 @@
+# Local dev entrypoint for agnet-project — `docker compose up` (add `--build` after any Dockerfile
+# or dependency change) is the entire local setup story. See ADR-0013
+# (docs/decisions/0013-docker-compose-local-render-production.md, local half) and ADR-0016
+# (docs/decisions/0016-aws-app-runner-production.md, production is AWS App Runner, not Render).
+#
+# Database (2026-08-17, ADR-0017: docs/decisions/0017-mongodb-atlas-database.md): MongoDB Atlas is
+# a hosted, always-remote cluster — there is no local database container to run. Local dev and
+# production both connect to Atlas via the same MONGODB_URI env var, the same way
+# OPENROUTER_API_KEY already worked. This is why there's only one service below now, not two.
+#
+# Prereqs: Docker Desktop (or equivalent) running, and a .env file in this directory copied from
+# .env.example with real OPENROUTER_API_KEY and MONGODB_URI values filled in.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Pulls every var from .env (OPENROUTER_API_KEY, MONGODB_URI, etc.) into the container's
+    # environment. Nothing secret is set here in the compose file itself, nor baked into the
+    # Dockerfile — only referenced via env_file at container-start time.
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
