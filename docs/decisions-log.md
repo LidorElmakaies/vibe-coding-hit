@@ -187,3 +187,15 @@
   documents the `--query`-filtering practice to prevent recurrence. Live URL is service-specific
   (changes if the service is ever recreated) — check `aws apprunner describe-service --query
   Service.ServiceUrl` rather than treating any URL as permanent.
+- 2026-08-18 — Pushed the full session's work to GitHub (78 files, one commit) — first commit
+  since the initial docs-only push. Caught and deleted a real near-miss first: a stray leftover
+  JSON file sitting in the repo root (from an earlier App Runner config-building step) contained
+  the real `OPENROUTER_API_KEY`/`MONGODB_URI` in plaintext and would have been swept into the
+  commit by `git add -A` — found and removed before staging, via a `.gitignore`-respecting scan
+  for secret patterns across everything that would actually be tracked. **Reversed the earlier
+  "not now" call on CI/CD**: added `.github/workflows/deploy.yml` (build → ECR push → App Runner
+  `start-deployment` → poll for healthy, on every push to `main`). Needs two GitHub repository
+  secrets (`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`) added once through GitHub's own UI — no
+  CLI tool available on this machine to set them non-interactively, and GitHub's encrypted
+  secrets storage is the actually-correct place for them regardless. Updated
+  `docs/deployment-runbook.md` §7 accordingly.

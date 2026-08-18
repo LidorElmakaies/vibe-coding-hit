@@ -130,17 +130,27 @@ aws apprunner start-deployment --service-arn <arn> --region us-east-1
 [ADR-0016](decisions/0016-aws-app-runner-production.md) and the CI/CD discussion below) — pushing
 a new image to ECR does *not* automatically redeploy; `start-deployment` triggers it explicitly.
 
-## 7. What GitHub does and doesn't do here (worth being explicit about)
+## 7. What GitHub does here (updated 2026-08-18 — CI/CD is now set up)
 
-Pushing this repo's code to GitHub is good practice (backup, history, collaboration) but **on its
-own changes nothing about what's deployed** — nothing in this setup watches the GitHub repo. The
-deployment path is entirely local-build → ECR → App Runner, as above.
+**Superseded**: this section originally said pushing to GitHub does nothing and CI/CD was
+deliberately deferred. The user reversed that call the same day — `.github/workflows/deploy.yml`
+now runs on every push to `main`: build the image → push to ECR (both `:latest` and a `:<commit
+sha>` tag) → `aws apprunner start-deployment` → poll until `RUNNING` or fail the workflow.
 
-**Deliberately not set up (2026-08-18, user's call, revisit if it starts to matter)**: a GitHub
-Actions workflow that would build the image, push to ECR, and trigger `start-deployment`
-automatically on every push. Keeping this manual for now is consistent with `CLAUDE.md`'s "keep
-the stack minimal" rule for a class project — add it later if manual redeploys become a real
-friction point, not preemptively.
+**One-time setup still needed, not automatable from here**: the workflow needs two repository
+secrets, set via **GitHub → this repo → Settings → Secrets and variables → Actions → New
+repository secret**:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+(the `agent-deploy` IAM user's credentials — same ones already in local `.env`/AWS CLI config).
+This is the correct, secure place for them — GitHub encrypts repository secrets and never exposes
+them in logs, unlike pasting into a chat conversation (see the 2026-08-18 decisions-log entry on
+exactly that mistake). No CLI tool on this machine (`gh` isn't installed) could set these
+non-interactively, so this one step is on the user, done once, through GitHub's own UI.
+
+Until those two secrets exist, the workflow will run on every push but fail at the "Configure AWS
+credentials" step — that's expected, not a sign anything else is broken.
 
 ## 8. Credential rotation (if a secret is ever exposed, like it was here)
 
