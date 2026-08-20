@@ -49,9 +49,14 @@ since each reads all 4 advocate outputs. Each call is single-shot — no convers
 between calls (see `CLAUDE.md` §2). **Two stages, each parallelized internally**: the 4 advocates
 run at once (nothing between them to wait on), then the 3 judges run at once once all 4 advocate
 outputs exist. Per Module 9's own figures for this exact shape: fully sequential ≈ 21s; run this
-way ≈ 6s. The charge sheet is identical across all 7 calls — use prompt caching on it (see
-[`docs/rules/cost-and-performance.md`](rules/cost-and-performance.md)). A hard cap on
-calls-per-deliberation bounds the cost of a runaway run — see Open Questions for the exact number.
+way ≈ 6s. The charge sheet is identical across all 7 calls — marked cacheable via OpenRouter's
+`cache_control` extension (implemented 2026-08-18, `lib/orchestrator/bundle.ts`/`callAgent.ts` —
+see [`docs/rules/cost-and-performance.md`](rules/cost-and-performance.md) and
+[`docs/cost-budget.md`](cost-budget.md) §7 for the real, live-verified behavior, including a
+genuine tension this same two-stage-parallel design creates with same-stage cache reuse — worth
+reading before assuming "cached once, reused 7 times" holds exactly as originally worded). A hard
+cap on calls-per-deliberation bounds the cost of a runaway run — see Open Questions for the exact
+number.
 
 ## 3. Database Shape (MongoDB Atlas, collections — real, 2026-08-17, [ADR-0017](decisions/0017-mongodb-atlas-database.md))
 

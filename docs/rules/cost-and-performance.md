@@ -12,8 +12,14 @@
   done this way it costs ~6s.
 
 - **Use prompt caching for the shared charge sheet.** All 7 calls (4 advocates + 3 judges) read
-  the same case text — that's exactly the kind of large, repeated block caching is for. Pay for it
-  once, reuse it across the run.
+  the same case text — that's exactly the kind of large, repeated block caching is for.
+  **Implemented 2026-08-18** (`lib/orchestrator/bundle.ts`/`callAgent.ts`, OpenRouter's
+  `cache_control` extension) and live-verified against real OpenRouter calls — see
+  [`docs/cost-budget.md`](../cost-budget.md) §7 for exactly what was verified, including a real
+  caveat found in testing: same-stage parallel calls (the 4 advocates at once, the 3 judges at
+  once) generally each write their own cache entry rather than one writing and the rest reading it,
+  so "pay for it once, reuse it across the run" doesn't hold as cleanly *within one run's parallel
+  stage* as the original wording here implied — still a real saving, just not that exact shape.
 
 - **Cap calls-per-deliberation — bound the economic blast radius.** A loop can spend faster than
   anyone is watching; set a hard limit on how many model calls a single run may make. **Resolved:**

@@ -18,9 +18,9 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: agnet-project
+  ECR_REPOSITORY: vibe-coding-hit
   ECR_REGISTRY: 462977977759.dkr.ecr.us-east-1.amazonaws.com
-  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-1:462977977759:service/agnet-project/f741714b5fbf473185e8c0cb00f837c8
+  APP_RUNNER_SERVICE_ARN: arn:aws:apprunner:us-east-1:462977977759:service/vibe-coding-hit/55ad382ce7d442d98fe82d32e8b4e158
 
 jobs:
   deploy:

@@ -6,6 +6,14 @@
 // can be parsed without guessing at freeform prose). Neither instruction is prompt content; both
 // are the kind of "here's the case, and here's how to format your answer" wrapper this project's
 // rules explicitly reserve for the user message.
+//
+// Returns an array of content blocks, not a plain string — this is what makes prompt caching
+// (ADR-0007, docs/cost-budget.md, docs/rules/cost-and-performance.md) possible: OpenRouter's
+// caching mechanism (verified against OpenRouter's own docs, 2026-08-18) works by marking a
+// `cache_control: {"type": "ephemeral"}` block on the specific content block you want the
+// provider to reuse across calls, using the content-blocks-array form of `content` instead of a
+// plain string. See lib/openrouter/client.ts / lib/orchestrator/callAgent.ts for where these
+// blocks actually get sent.
 
 import { SOFT_LENGTH_TARGET, type AgentRole } from "../constants";
 
@@ -16,17 +24,50 @@ const ROLE_LABEL: Record<string, string> = {
   "prosecution-2": "Prosecution Advocate #2",
 };
 
-export function buildAdvocateUserMessage(caseText: string): string {
-  return [
-    "Case:",
-    '"""',
-    caseText.trim(),
-    '"""',
-    "",
-    `Respond with your argument for this case. Limit your answer to approximately ` +
+/**
+ * One block of a user message's `content` array. `cache_control` is an OpenRouter-specific
+ * extension (not part of the official OpenAI content-part schema — the `openai` SDK's own
+ * `ChatCompletionContentPartText` type has no such field), so this is our own type, not the SDK's
+ * — see lib/orchestrator/callAgent.ts for the narrow cast where it actually gets sent.
+ */
+export interface UserMessageBlock {
+  type: "text";
+  text: string;
+  cache_control?: { type: "ephemeral" };
+}
+
+/**
+ * Flattens a user message's blocks back into one string, in order — used only for the `call_log`
+ * audit row's `userMessage` field (a plain TEXT column; the request actually sent to OpenRouter
+ * uses the block array above, not this flattened form). Each builder below is written so its
+ * blocks concatenate back into exactly the same text the pre-caching single-string version
+ * produced — caching changed how the content is *framed* for the request, not what it *says*.
+ */
+export function flattenUserMessageBlocks(blocks: UserMessageBlock[]): string {
+  return blocks.map((b) => b.text).join("");
+}
+
+// docs/cost-budget.md's minimum-useful-size caveat: providers that support explicit caching
+// (Anthropic, older Gemini, Alibaba — per OpenRouter's docs) generally only actually cache a block
+// above a provider-specific minimum token count (roughly 1,024+ depending on provider/model). A
+// very short case text falling under that threshold is a real, expected case where caching is
+// simply inert — not a bug, and not something this code tries to detect or route around; sending
+// the marker is harmless either way (see the file-level comment on provider behavior below).
+export function buildAdvocateUserMessage(caseText: string): UserMessageBlock[] {
+  const cacheableCase: UserMessageBlock = {
+    type: "text",
+    text: ["Case:", '"""', caseText.trim(), '"""'].join("\n"),
+    cache_control: { type: "ephemeral" },
+  };
+  const instruction: UserMessageBlock = {
+    type: "text",
+    text:
+      "\n\n" +
+      `Respond with your argument for this case. Limit your answer to approximately ` +
       `${SOFT_LENGTH_TARGET.advocate} tokens (roughly 700-750 words) — the strongest, most ` +
       `focused form of your position, not padding or repetition.`,
-  ].join("\n");
+  };
+  return [cacheableCase, instruction];
 }
 
 export interface AdvocateOutputForBundle {
@@ -47,10 +88,16 @@ export const JUDGE_TRAILER_INSTRUCTION = [
   "REASONS: <first reason> | <second reason> | <additional reasons, if any, each separated by |>",
 ].join("\n");
 
+/**
+ * Judges: the case text + all 4 advocate outputs are identical across all 3 judge calls (the same
+ * bundle plugged into each) — that whole combined block is what's marked cacheable. The
+ * render-verdict soft-length instruction and the trailer-format instruction go in a second,
+ * uncached block after it.
+ */
 export function buildJudgeUserMessage(
   caseText: string,
   advocateOutputs: AdvocateOutputForBundle[]
-): string {
+): UserMessageBlock[] {
   // Judges must receive the full bundle — all 4 advocate slots, never silently dropped — see
   // docs/rules/audit-and-reliability.md. A slot whose call failed after every retry is included
   // with an explicit, honest failure marker, never fabricated argument content and never just
@@ -65,18 +112,22 @@ export function buildJudgeUserMessage(
     return `--- ${label} ---\n${body}`;
   });
 
-  return [
-    "Case:",
-    '"""',
-    caseText.trim(),
-    '"""',
-    "",
-    "Advocate arguments:",
-    "",
-    ...sections,
-    "",
-    `Render your verdict. Limit your reasoning to approximately ${SOFT_LENGTH_TARGET.judge} tokens.`,
-    "",
-    JUDGE_TRAILER_INSTRUCTION,
-  ].join("\n");
+  const cacheableBundle: UserMessageBlock = {
+    type: "text",
+    text: ["Case:", '"""', caseText.trim(), '"""', "", "Advocate arguments:", "", ...sections].join("\n"),
+    cache_control: { type: "ephemeral" },
+  };
+  const instruction: UserMessageBlock = {
+    type: "text",
+    text:
+      "\n" +
+      [
+        "",
+        `Render your verdict. Limit your reasoning to approximately ${SOFT_LENGTH_TARGET.judge} tokens.`,
+        "",
+        JUDGE_TRAILER_INSTRUCTION,
+      ].join("\n"),
+  };
+
+  return [cacheableBundle, instruction];
 }

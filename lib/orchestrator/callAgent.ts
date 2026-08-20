@@ -10,6 +10,7 @@
 import { getOpenRouterClient } from "../openrouter/client";
 import { insertCallLog } from "../db/queries";
 import { MAX_ATTEMPTS_PER_CALL, type AgentRole } from "../constants";
+import { flattenUserMessageBlocks, type UserMessageBlock } from "./bundle";
 import type { RunEvent } from "./events";
 
 const CALL_TIMEOUT_MS = 60_000;
@@ -20,7 +21,7 @@ export interface CallAgentParams {
   callType: "advocate" | "judge";
   model: string;
   systemPrompt: string;
-  userMessage: string;
+  userMessage: UserMessageBlock[];
   maxTokens: number; // already clamped to the hard cap by the caller
   emit: (event: RunEvent) => void;
   /** Bumped by the caller across the whole run; returns false if the 21-call ceiling is hit. */
@@ -57,9 +58,27 @@ async function runOneAttempt(params: CallAgentParams, streamLiveToClient: boolea
     null;
 
   try {
-    // `usage: { include: true }` is an OpenRouter-specific extension (returns real per-call cost
-    // in the usage object) not part of the official OpenAI schema — hence the loose cast on the
-    // request body only, kept as narrow as possible.
+    // `usage: { include: true }` and the user message's `cache_control` blocks are both
+    // OpenRouter-specific extensions not part of the official OpenAI schema (the `openai` SDK's
+    // own content-part type has no `cache_control` field) — hence the loose cast on the request
+    // body, kept as narrow as possible (params.userMessage is still a real, typed
+    // UserMessageBlock[] up to this point — see lib/orchestrator/bundle.ts).
+    //
+    // Prompt caching (ADR-0007, docs/cost-budget.md, docs/rules/cost-and-performance.md) is scoped
+    // PER MODEL+PROVIDER on OpenRouter's side — a cached block only gets reused by a later call
+    // that hits the same model/provider. In "single model for all" mode (all 7 calls use the same
+    // model) this is a real, working optimization: the case text is cached across the 4 advocate
+    // calls, and the case+all-4-outputs bundle is cached across the 3 judge calls. In "random per
+    // agent" mode, each call likely lands on a different model, so cross-call cache hits mostly
+    // won't happen — that is an accepted, inherent tradeoff of that mode (you're trading cache
+    // reuse for model diversity), NOT a bug in this code; don't "fix" it by special-casing model
+    // selection here. We also don't branch on provider: OpenAI/Gemini 2.5+ cache automatically
+    // regardless of this field (a harmless no-op for them), Anthropic/older-Gemini/Alibaba need
+    // the explicit marker to activate it, and providers with no caching support just ignore the
+    // field — the same request shape is sent unconditionally either way. Also inherently
+    // best-effort on short input: providers that honor `cache_control` generally only actually
+    // cache a block above a provider-specific minimum size (roughly 1,024+ tokens) — a short case
+    // simply won't be cached, which is expected, not a failure.
     const stream = await client.chat.completions.create(
       {
         model: params.model,
@@ -180,7 +199,11 @@ export async function callAgent(params: CallAgentParams): Promise<CallAgentResul
       model: params.model,
       systemPrompt: params.systemPrompt,
       maxTokens: params.maxTokens,
-      userMessage: params.userMessage,
+      // `call_log.userMessage` is a plain TEXT column — flattened back from the block array
+      // actually sent (see lib/orchestrator/bundle.ts's flattenUserMessageBlocks doc comment: the
+      // blocks are constructed so this reconstructs the exact same text the pre-caching
+      // single-string version produced, just reporting content, not the caching framing).
+      userMessage: flattenUserMessageBlocks(params.userMessage),
       status: outcome.ok ? "success" : "failed",
       // On failure, still log whatever partial text (if any) had streamed in before the error —
       // useful for debugging a malformed/truncated response — as null rather than an empty string

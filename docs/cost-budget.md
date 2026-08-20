@@ -75,8 +75,67 @@ close output lands to the soft target vs. the hard ceiling — in the same range
 rather than an average.
 
 **With prompt caching** ([ADR-0007](decisions/0007-parallel-calls-and-prompt-caching.md)) on the
-shared case text: the case (≤1,000 tokens) is billed once instead of up to 7 times, so the actual
-*billed* input is lower than the raw sum above.
+shared case text: implemented 2026-08-18 in `lib/orchestrator/bundle.ts`/`callAgent.ts` (see §7
+below for the real, live-verified specifics) — the case (for advocates) / case+all-4-advocate-
+outputs (for judges) is marked cacheable via OpenRouter's `cache_control` extension. **Read §7
+before assuming this reliably means "billed once instead of up to 7 times" in practice** — that
+framing turned out to only reliably hold for calls that don't race each other; the 4 advocates (and
+separately the 3 judges) are deliberately dispatched in true parallel per this same ADR, and live
+testing showed parallel sibling calls typically each write their own cache entry rather than one
+writing and the others reading it, so the within-stage saving is less than the original wording
+implied. It's still real cost savings, just not this exact framing — see §7.
+
+## 7. Prompt Caching — Real, Verified Behavior (added 2026-08-18)
+
+Implemented per OpenRouter's actual documented request format (verified against their docs, not
+guessed): the cacheable prefix is sent as its own content block with `cache_control: {"type":
+"ephemeral"}`, using the content-blocks-array form of a message's `content` instead of a plain
+string (`lib/orchestrator/bundle.ts`'s `buildAdvocateUserMessage`/`buildJudgeUserMessage`, sent via
+`lib/orchestrator/callAgent.ts`). What's cacheable per call type:
+
+- **Advocates (×4):** the case text — identical across all 4 calls.
+- **Judges (×3):** the case text **+ all 4 advocate outputs** (the full bundle) — identical across
+  all 3 calls.
+
+The soft length instruction (and, for judges, the verdict trailer-format instruction) is always a
+second, *uncached* block after the cacheable one.
+
+**Live-verified findings (real OpenRouter calls, 2026-08-18, not just a read of the docs):**
+
+1. **The mechanism itself works correctly when the routed provider supports it.** A controlled,
+   sequential (not parallel) test against `anthropic/claude-sonnet-4.5` showed an explicit cache
+   *write* on the first call (`cache_write_tokens: 3195`) and a cache *hit* on an identical second
+   call a few seconds later (`cached_tokens: 3195`, cost for that call dropping roughly 11x). This
+   is direct proof the request format is correct, not just plausible-looking.
+2. **It's a genuine no-op, not an error, for a provider/routing that doesn't support it.** A full
+   real run in "single model for all" mode using `anthropic/claude-3-haiku` completed all 7 calls
+   successfully with `cached_tokens: 0` / `cache_write_tokens: 0` throughout — no errors, no
+   special-casing needed, exactly the harmless-no-op behavior this was designed for. (Separately:
+   forcing that model's provider routing to `anthropic` directly returned "No endpoints found" —
+   this specific legacy model id may no longer route to Anthropic's own caching-capable endpoint by
+   default on OpenRouter. Not a caching bug; flagged for whoever revisits `CURATED_MODELS`.)
+3. **Real, not-previously-identified tension: parallel dispatch (this same ADR-0007) races the
+   cache write.** A real run where all 3 judges (identical cacheable bundle, same model) were
+   dispatched via `Promise.all` — exactly as ADR-0007 requires — showed **all three** calls with
+   `cache_write_tokens > 0` and `cached_tokens: 0`: each one wrote its own cache entry instead of
+   one writing and the other two reading it. The cache write evidently isn't visible to sibling
+   requests that reach the provider within the same short window. So "the case is cached once and
+   reused across the 4 advocates / 3 judges within a single run" is **not** reliably true for
+   same-stage siblings specifically — the parallelization this project deliberately chose for
+   latency (~6s vs ~21s, ADR-0007) works against same-run cache reuse within a stage. What caching
+   *does* still reliably help with: a provider that supports it billing the cached block's *reuse*
+   whenever a later, non-simultaneous call (a retry, a different run of a similar/identical case
+   within the cache TTL, or any call that lands meaningfully after an earlier one's write has
+   propagated) hits the same model. This is a real, if narrower, saving than the original
+   documentation implied — corrected here rather than left overclaimed.
+4. **Scoped per model+provider, as documented.** In "random per agent" mode (`lib/constants.ts`'s
+   `CURATED_MODELS`, picked independently per role), cross-call cache reuse mostly won't fire since
+   sibling calls usually land on different models — an accepted, inherent tradeoff of that mode,
+   not a bug (see the comment in `lib/orchestrator/callAgent.ts`).
+
+No provider-specific branching was added — the same block structure is sent unconditionally
+regardless of which model/provider ends up handling the call, per OpenRouter's own guidance that
+providers without support simply ignore the field.
 
 ## 4. Estimated Cost Per Run
 
